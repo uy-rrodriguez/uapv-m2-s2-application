@@ -59,7 +59,7 @@ var express = require('express')
 var app = express()
 
 app.get('/', function(req, res) {
-  res.json({result: "It's alive!})
+  res.json({result: "It's alive!"})
 })
 
 app.listen(4000)

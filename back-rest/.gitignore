@@ -9,3 +9,6 @@
 
 # PhpStorm files
 /.idea
+
+# Database files
+/db

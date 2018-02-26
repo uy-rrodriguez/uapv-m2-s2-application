@@ -1,5 +1,9 @@
 # uapv-m2-s2-application
-Projet pour l'UE Application. Baptiste BRIOT--RIBEYRE, Ricardo RODRIGUEZ. Université d'Avignon et des Pays de Vaucluse.
+This is a project for the course "E-commerce, E-marketing, E-reputation", Master's degree second year, Avignon University (Université d'Avignon et des Pays de Vaucluse).
+
+Authors:
+ - Baptiste BRIOT--RIBEYRE
+ - Ricardo RODRIGUEZ
 
 
 # Introduction #
@@ -50,6 +54,12 @@ import registerServiceWorker from './registerServiceWorker';
 ReactDOM.render(<App />, document.getElementById('root'));
 registerServiceWorker();
 ```
+
+```npm install --save prop-types```
+Install PropTypes, a library that lets us define the types and mandatory options for view properties.
+
+```npm install --save react-router-dom```
+Install React-Routes, a library to manage routing between different views. With it we can create links to other views which will automatically change the application's state.
 
 
 # Node.js + Express : Creating and building the REST API #

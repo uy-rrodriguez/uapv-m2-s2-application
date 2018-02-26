@@ -1,13 +1,13 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import "./assets/css/LoginForm.css";
+import "./assets/css/RegisterForm.css";
 
-class LoginForm extends Component {
+class RegisterForm extends Component {
   render() {
     return (
       <div>
-        <h1>Login form</h1>
-        <form onSubmit={this.props.onSubmit} className="LoginForm-form">
+        <h1>Register form</h1>
+        <form onSubmit={this.props.onSubmit} className="RegisterForm-form">
           <div className="form-group">
             <input type="text" name="user" value={this.props.user}
                    onChange={this.props.onChange} className="form-control" placeholder="User name" />
@@ -24,11 +24,11 @@ class LoginForm extends Component {
 }
 
 /* https://reactjs.org/docs/typechecking-with-proptypes.html */
-LoginForm.propTypes = {
+RegisterForm.propTypes = {
   user: PropTypes.string.isRequired,
   password: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired
 };
 
-export default LoginForm;
+export default RegisterForm;

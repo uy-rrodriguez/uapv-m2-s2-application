@@ -4,7 +4,7 @@ import "./assets/css/App.css";
 import LoginFormController from "./LoginFormController";
 import RegisterFormController from "./RegisterFormController";
 
-import { BrowserRouter, Route, Link } from 'react-router-dom';
+import { BrowserRouter, Route, Link } from "react-router-dom";
 
 class App extends Component {
   render() {

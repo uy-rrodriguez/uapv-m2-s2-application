@@ -24,12 +24,12 @@ class RegisterFormController extends Component {
       method: "POST",
       data: this.state,
 
-      success: function (data, textStatus, jqXHR) {
-        console.log(JSON.stringify(data));
+      success(data, textStatus, jqXHR) {
+        alert(JSON.stringify(data));
       },
 
-      error: function (jqXHR, textStatus, errorThrown) {
-        console.error(textStatus);
+      error(jqXHR, textStatus, errorThrown) {
+        alert("Error: " + textStatus);
       }
     });
   }

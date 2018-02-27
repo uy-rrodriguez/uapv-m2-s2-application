@@ -2,15 +2,15 @@
     Server configuration
  * ******************************************************************************************* */
 
-var express = require('express');
-var cors = require('cors');
-var bodyParser = require('body-parser');
-var sqlite3 = require('sqlite3');
+var express = require("express");
+var cors = require("cors");
+var bodyParser = require("body-parser");
+var sqlite3 = require("sqlite3");
 
 var app = express();
 
 var corsOptions = {
-  origin: 'http://localhost:3000',
+  origin: "http://localhost:3000",
   optionsSuccessStatus: 200
 };
 
@@ -24,11 +24,11 @@ app.use(bodyParser.urlencoded({extended: false}));
  * ******************************************************************************************* */
 
 function db_connect() {
-  var db = new sqlite3.Database('./db/back-rest.db', (err) => {
+  var db = new sqlite3.Database("./db/back-rest.db", (err) => {
     if (err) {
       console.error(err.message);
     }
-    console.log('Connected to the database.');
+    console.log("Connected to the database.");
   });
   return db;
 }
@@ -54,11 +54,11 @@ function db_create() {
     Handlers configuration
  * ******************************************************************************************* */
 
-app.get('/index', function(req, res) {
+app.get("/index", function(req, res) {
   res.json({result: "It's alive!"})
 });
 
-app.post('/login', function(req, res, next) {
+app.post("/login", function(req, res, next) {
   console.log(req.body);
 
   /*
@@ -92,7 +92,7 @@ app.post('/login', function(req, res, next) {
   db_close(db);
 });
 
-app.post('/register', function(req, res) {
+app.post("/register", function(req, res) {
   console.log(req.body);
 
   let sql =`INSERT INTO user (name, password) VALUES (?, ?)`;

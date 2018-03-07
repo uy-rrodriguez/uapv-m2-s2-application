@@ -16,3 +16,9 @@
 # Logs
 *.log
 **/*.log
+
+# NetBeans Project
+/nbproject
+
+# Lock Files
+package-lock.json

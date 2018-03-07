@@ -48,23 +48,25 @@ app.post("/login", function(req, res, next) {
   try {
     let dbconn = db.connect();
     dbconn.get(sql, [req.body.user, req.body.password], (err, row) => {
-      if (err) {
-        throw err;
-      }
+      try {
+        if (err) {
+          throw err;
+        }
 
-      if (row) {
-        res.json({result: true, id: row.id, name: row.name});
+        if (row) {
+          res.json({result: true, id: row.id, name: row.name});
+        }
+        else {
+          throw "No user found with the given credentials";
+        }
       }
-      else {
-        throw "No user found with the given credentials";
+      catch (e) {
+        res.json({result: false, error: e.message});
       }
     });
   }
   catch(e) {
     res.json({result: false, error: e.message});
-  }
-  finally {
-    db.close();
   }
 });
 
@@ -76,18 +78,20 @@ app.post("/register", function(req, res) {
   try {
     let dbconn = db.connect();
     dbconn.run(sql, [req.body.user, req.body.password], (err) => {
-      if (err) {
-        throw err;
-      }
+      try {
+        if (err) {
+          throw err;
+        }
 
-      res.json({result: true, message: "The user has been successfully created"});
+        res.json({result: true, message: "The user has been successfully created"});
+      }
+      catch (e) {
+        res.json({result: false, error: e.message});
+      }
     });
   }
   catch(e) {
     res.json({result: false, error: e.message});
-  }
-  finally {
-    db.close(db);
   }
 });
 

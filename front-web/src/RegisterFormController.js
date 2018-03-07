@@ -20,7 +20,7 @@ class RegisterFormController extends Component {
     event.preventDefault();
 
     $.ajax({
-      url: "http://localhost:4000/login",
+      url: "http://localhost:4000/register",
       method: "POST",
       data: this.state,
 

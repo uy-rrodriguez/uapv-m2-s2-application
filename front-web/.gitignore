@@ -22,3 +22,9 @@ yarn-error.log*
 
 # PhpStorm files
 /.idea
+
+# NetBeans Project
+/nbproject
+
+# Lock Files
+package-lock.json

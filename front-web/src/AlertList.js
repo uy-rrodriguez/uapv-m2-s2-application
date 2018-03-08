@@ -4,15 +4,16 @@ import PropTypes from "prop-types";
 
 class AlertList extends Component {
   render() {
-    const listItems = this.props.alerts.map((alert, key) =>
-      <tr key={key} className={alert.urgent ? "AlertList-item-urgent" : ""} >
-        <th scope="row">{alert.key}</th>
+    const listItems = this.props.alerts.map((alert, alertId) =>
+      <tr key={alert.id}>
+        <th scope="row">{alert.id}</th>
         <td>{alert.product.id}</td>
         <td>{alert.product.name}</td>
-        <td>{alert.itemsLeft}</td>
+        <td>{alert.stock}</td>
         <td>
-          <form className="form-inline" action="#">
-            <input name="newStock" type="number" value={0} className="form-control" />
+          <form className="form-inline" action="#" onSubmit={(event) => this.props.onSubmit(alert.id, event)}>
+            <input name="newStock" type="number" value={alert.newStock} className="form-control"
+              onChange={(event) => this.props.onStockChange(alert.id, event)} />
             <button type="submit" className="btn btn-default">
               <span className="glyphicon glyphicon-ok" aria-hidden="true" />
             </button>
@@ -44,7 +45,9 @@ class AlertList extends Component {
 }
 
 AlertList.propTypes = {
-  alerts: PropTypes.array.isRequired
+  alerts: PropTypes.array.isRequired,
+  onStockChange: PropTypes.func.isRequired,
+  onSubmit: PropTypes.func.isRequired
 };
 
 export default AlertList;

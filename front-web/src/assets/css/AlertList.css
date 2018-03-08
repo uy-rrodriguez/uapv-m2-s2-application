@@ -9,14 +9,3 @@
 .AlertList-wrapper input {
     max-width: 80px;
 }
-
-.AlertList-item-urgent {
-    color: #FFFFFF;
-    font-weight: 600;
-    background: linear-gradient(#DD4444, #EE3333);
-}
-
-.AlertList-item-urgent input {
-    color: #000;
-    font-weight: normal;
-}

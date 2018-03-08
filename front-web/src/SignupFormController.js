@@ -1,14 +1,27 @@
 import React, { Component } from "react";
-import RegisterForm from "./RegisterForm";
+import SignupForm from "./SignupForm";
 
 import $ from "jquery";
 
-class RegisterFormController extends Component {
+class SignupFormController extends Component {
   constructor(props) {
     super(props);
-    this.state = {user: "", password: ""};
+
+    const roleList = {
+      1: "Picker",
+      2: "Manager",
+      3: "Administrator"
+    };
+
+    this.state = {
+      user: "",
+      password: "",
+      role: 1,
+      roleList: roleList
+    };
 
     this.handleChange = this.handleChange.bind(this);
+    this.handleChangeSelect = this.handleChangeSelect.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
@@ -16,11 +29,15 @@ class RegisterFormController extends Component {
     this.setState({[event.target.name]: event.target.value});
   }
 
+  handleChangeSelect(event) {
+    this.setState({[event.target.name]: parseInt(event.target.value, 0)});
+  }
+
   handleSubmit(event) {
     event.preventDefault();
 
     $.ajax({
-      url: "http://localhost:4000/register",
+      url: "http://localhost:4000/signup",
       method: "POST",
       data: this.state,
 
@@ -35,12 +52,15 @@ class RegisterFormController extends Component {
   }
 
   render() {
-    return <RegisterForm
+    return <SignupForm
       user={this.state.user}
       password={this.state.password}
+      role={this.state.role}
+      roleList={this.state.roleList}
       onChange={this.handleChange}
+      onChangeSelect={this.handleChangeSelect}
       onSubmit={this.handleSubmit} />;
   }
 }
 
-export default RegisterFormController;
+export default SignupFormController;

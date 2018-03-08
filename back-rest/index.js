@@ -70,7 +70,7 @@ app.post("/login", function(req, res, next) {
   }
 });
 
-app.post("/register", function(req, res) {
+app.post("/signin", function(req, res) {
   //console.log(req.body);
 
   let sql ="INSERT INTO user (name, password) VALUES (?, ?)";
@@ -95,17 +95,51 @@ app.post("/register", function(req, res) {
   }
 });
 
+app.get('/logout', function(req, res) {
+  
+});
+
+app.get('/ordergroup', function(req, res) {
+  
+});
+
+app.put('/ordergroup/:uid', function(req, res) {
+  
+});
+
+app.post('/alert', function(req, res) {
+  
+});
+
+app.get('/alert', function(req, res) {
+  
+});
+
+app.delete('/alert/:uid', function(req, res) {
+  //console.log(req.body);
+  
+  let sql = `SELECT * FROM "alert" WHERE id = ?`;
+  sql = `UPDATE "product" SET stock = ? WHERE id = ?`;
+  sql = `UPDATE "alert" SET id_status = 1 WHERE id = ?`;
+});
+
+app.get('/ordergrouplist', function(req, res) {
+  
+});
+
 
 
 /* ******************************************************************************************* *
     Database creation
  * ******************************************************************************************* */
 
+/*
 db.connect();
-db.createTables();
+//db.dropTables();
+//db.createTables();
+//db.insertData();
 db.close();
-
-
+*/
 
 /* ******************************************************************************************* *
     Server initialization

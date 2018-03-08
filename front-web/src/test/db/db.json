@@ -1,0 +1,183 @@
+{
+  "user": [
+    {
+      "id": 1,
+      "id_role": "Administrator",
+      "name": "admin",
+      "password": "21232f297a57a5a743894a0e4a801fc3",
+      "max_weight": 0
+    },
+    {
+      "id": 2,
+      "id_role": "Picker",
+      "name": "picker1",
+      "password": "1a652c8f92ca4fa42aa90a8d936eb3d4",
+      "max_weight": 90
+    },
+    {
+      "id": 3,
+      "id_role": "Picker",
+      "name": "picker2",
+      "password": "9567010613b275339e766a7cbfa25286",
+      "max_weight": 65
+    },
+    {
+      "id": 4,
+      "id_role": "Manager",
+      "name": "manager",
+      "password": "1d0258c2440a8d19e716292b231e3190",
+      "max_weight": 0
+    }
+  ],
+
+  "ordergroup": [
+    {
+      "id": 1,
+      "id_user": 2,
+      "total_weight": 89,
+      "orders": [
+        {
+          "id": 1,
+          "id_order_status": 1,
+          "client": "M. Jean du Pont d'Avignon",
+          "date": "2018-03-07 15:30:00",
+          "orderlines": [
+            {
+              "id_product": 1,
+              "quantity": 3
+            },
+            {
+              "id_product": 2,
+              "quantity": 1
+            },
+            {
+              "id_product": 3,
+              "quantity": 5
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "id_order_status": 1,
+          "client": "Mme. Jeannne Marie",
+          "date": "2018-02-18 21:00:00",
+          "orderlines": [
+            {
+              "id_product": 1,
+              "quantity": 1
+            },
+            {
+              "id_product": 2,
+              "quantity": 2
+            },
+            {
+              "id_product": 3,
+              "quantity": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "id_user": 3,
+      "total_weight": 61,
+      "orders": [
+        {
+          "id": 3,
+          "id_order_status": 1,
+          "client": "M. Jean du Pont d'Avignon",
+          "date": "2018-03-07 15:30:00",
+          "orderlines": [
+            {
+              "id_product": 1,
+              "quantity": 1
+            },
+            {
+              "id_product": 2,
+              "quantity": 2
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "id_order_status": 1,
+          "client": "Mme. Jeanne Marie",
+          "date": "2018-02-18 21:00:00",
+          "orderlines": [
+            {
+              "id_product": 3,
+              "quantity": 5
+            }
+          ]
+        }
+      ]
+    }
+  ],
+
+  "product": [
+    {
+      "id": 1,
+      "name": "Produit 1",
+      "stock": 5,
+      "weight": 5,
+      "rack": {
+        "row": 1,
+        "column": 1,
+        "section": {
+          "row": 1,
+          "column": 1
+        }
+      }
+    },
+    {
+      "id": 2,
+      "name": "Produit 2",
+      "stock": 2,
+      "weight": 3,
+      "rack": {
+        "row": 3,
+        "column": 2,
+        "section": {
+          "row": 3,
+          "column": 2
+        }
+      }
+    },
+    {
+      "id": 3,
+      "name": "Produit 3",
+      "stock": 10,
+      "weight": 10,
+      "rack": {
+        "row": 2,
+        "column": 2,
+        "section": {
+          "row": 4,
+          "column": 4
+        }
+      }
+    }
+  ],
+
+  "alert": [
+    {
+      "id": 1,
+      "id_alert_status": "Active",
+      "stock": 0,
+      "product": {
+        "id": 1,
+        "name": "Produit 1"
+      }
+    },
+    {
+      "id": 2,
+      "id_alert_status": "Active",
+      "stock": 1,
+      "product": {
+        "id": 2,
+        "name": "Produit 2"
+      }
+    }
+  ]
+}

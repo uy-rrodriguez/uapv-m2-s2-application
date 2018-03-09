@@ -95,51 +95,170 @@ app.post("/signin", function(req, res) {
   }
 });
 
-app.get('/logout', function(req, res) {
-  
-});
+app.get('/logout', function(req, res) {});
 
 app.get('/ordergroup', function(req, res) {
   
 });
 
 app.put('/ordergroup/:uid', function(req, res) {
-  
+  let sql1 = `SELECT * FROM "order_status" WHERE name = ?`;
+  let sql2 = `SELECT * FROM "order_group" WHERE id = ?`;
+  let sql3 = `SELECT * FROM "order_group_line" WHERE id_order_group = ?`;
+  let sql4 = `UPDATE "order" SET id_order_status = ? WHERE id = ?`;
+  let conn;
+  let status;
+  try {
+    conn = db.connect();
+    conn.serialize(function() {
+      conn.get(sql1, [req.body.status], function(err, row) {
+        if (err) res.json({result: false, message: err.message});
+        if (row) {
+          
+          status = row.id;
+          conn.get(sql2, [req.params.id], function(err, row) {
+            if (err) res.json({result: false, message: err.message});
+            if (row) {
+              conn.all(sql3, [row.id], function(err, rows) {
+                if (err) res.json({result: false, message: err.message});
+                if (rows) {
+                  for (var row in rows) {
+                    conn.run(sql4, [status, row.id_order], function(err) {
+                      if (err) res.json({result: false, message: err.message});
+                    });
+                  }
+                  res.json({result: true});
+                }
+                else {
+                  res.json({result: false, message: "Unable to retrieve each order !"});
+                }
+              });
+            }
+            else {
+              res.json({result: false, message: "Unable to retrieve order group from specified id !"});
+            }
+          });
+          
+          /*
+          conn.run(sql2, [row.id, req.params.id], function(err) {
+            if (err) {
+              res.json({result: false, message: err.message});
+            }
+            else {
+              res.json({result: true});
+            }
+          });
+          */
+          
+        }
+        else {
+          res.json({result: false, message: "Unable to retrieve specified status !"});
+        }
+      });
+    });
+  }
+  catch (e) {
+    res.json({result: false, message: e.message});
+  }
+  finally {
+    db.close();
+  }
 });
 
 app.post('/alert', function(req, res) {
-  
+  let sql1 = `INSERT INTO "alert"(id_product, id_alert_status, stock) VALUES(
+    ?, 2, ?)`;
+  let conn;
+  try {
+    conn = db.connect();
+    conn.run(sql1, [req.body.id_product, req.body.stock], function(err) {
+      if (err) {
+        res.json({result: false, message: err.message});
+      }
+      else {
+        res.json({result: true});
+      }
+    });
+  }
+  catch (e) {
+    res.json({result: false, message: e.message});
+  }
+  finally {
+    db.close();
+  }
 });
 
 app.get('/alert', function(req, res) {
-  
+  let sql1 = `SELECT * FROM "alert"`;
+  let conn;
+  try {
+    conn = db.connect();
+    conn.all(sql1, function(err, rows) {
+      if (err) res.json({result: false, message: err.message});
+      if (rows) {
+        res.json({result: true, alerts: rows});
+      }
+      else {
+        res.json({result: false, message: "Unable to get alert list !"});
+      }
+    });
+  }
+  catch (e) {
+    res.json({result: false, message: e.message});
+  }
+  finally {
+    db.close();
+  }
 });
 
-app.delete('/alert/:uid', function(req, res) {
-  //console.log(req.body);
-  
-  let sql = `SELECT * FROM "alert" WHERE id = ?`;
-  sql = `UPDATE "product" SET stock = ? WHERE id = ?`;
-  sql = `UPDATE "alert" SET id_status = 1 WHERE id = ?`;
+app.delete('/alert/:id', function(req, res) {
+  let sql1 = `SELECT * FROM "alert" WHERE id = ?`;
+  let sql2 = `UPDATE "product" SET stock = ? WHERE id = ?`;
+  let sql3 = `UPDATE "alert" SET id_alert_status = ? WHERE id = ?`;
+  let conn;
+  try {
+    conn = db.connect();
+    conn.serialize(function() {
+      conn.get(sql1, [req.params.id], (err, row) => {
+        if (err) res.json({result: false, message: err.message});
+        if (row) {
+          conn.run(sql2, [req.body.stock, row.id_product], function(err) {
+            if (err) res.json({result: false, message: err.message});
+          });
+          conn.run(sql3, [1, row.id], function(err) {
+            if (err) {
+              res.json({result: false, message: err.message});
+            }
+            else {
+              res.json({result: true});
+            }
+          });
+        }
+        else {
+          res.json({result: false, message: "Unable to retrieve specified alert !"});
+        }
+      });
+    });
+  }
+  catch (e) {
+    res.json({result: false, message: e.message});
+  }
+  finally {
+    db.close();
+  }
 });
 
-app.get('/ordergrouplist', function(req, res) {
-  
-});
-
-
+app.get('/ordergrouplist', function(req, res) {});
 
 /* ******************************************************************************************* *
     Database creation
  * ******************************************************************************************* */
 
-/*
 db.connect();
 //db.dropTables();
 //db.createTables();
-//db.insertData();
+db.insertData();
 db.close();
-*/
 
 /* ******************************************************************************************* *
     Server initialization

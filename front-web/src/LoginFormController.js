@@ -1,7 +1,10 @@
 import React, { Component } from "react";
 import LoginForm from "./LoginForm";
-
-import $ from "jquery";
+//import $ from "jquery";
+import globalEmitter from "./helpers/globalEmitter";
+import startSession from "./helpers/startSession";
+import isAuthenticated from "./helpers/isAuthenticated";
+import { Redirect } from "react-router-dom";
 
 class LoginFormController extends Component {
   constructor(props) {
@@ -19,6 +22,7 @@ class LoginFormController extends Component {
   handleSubmit(event) {
     event.preventDefault();
 
+    /*
     $.ajax({
       url: "http://localhost:4000/login",
       method: "POST",
@@ -32,9 +36,24 @@ class LoginFormController extends Component {
         alert("Error: " + textStatus);
       }
     });
+    */
+
+    // Initialize user session
+    startSession({id: 1, name: "test"});
+
+    // Send a signal to indicate that the user has been successfully logged in
+    globalEmitter.emit('afterLogin');
+
+    // Redirect to home page
+    const { history } = this.props;
+    history.push('/');
   }
 
   render() {
+    if (isAuthenticated()) {
+      return <Redirect to="/" />;
+    }
+
     return <LoginForm
       user={this.state.user}
       password={this.state.password}

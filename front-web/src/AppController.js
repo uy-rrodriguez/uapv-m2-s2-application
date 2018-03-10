@@ -1,58 +1,59 @@
 import React, { Component } from "react";
-
 import App from "./App";
-import $ from "jquery";
+//import $ from "jquery";
+import globalEmitter from "./helpers/globalEmitter";
+import isAuthenticated from "./helpers/isAuthenticated";
 
 class AppController extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
-    this.state.routes = [
-      {name: "Home",              path: "/"},
-      {name: "Login",             path: "/login"},
-      {name: "Sign up",           path: "/signup"},
-      {name: "Alerts",            path: "/alert"},
-      {name: "Users",             path: "/user"},
-      {name: "New order group",   path: "/ordergroup"},
-      {name: "List order groups", path: "/ordergrouplist"}
-    ];
-    this.state.location = "/";
-
-    this.handleNavigation = this.handleNavigation.bind(this);
-    this.handleLogout = this.handleLogout.bind(this);
+    this.state = {
+      routes: this.getHeaderRoutes()
+    };
   }
 
-  handleNavigation(event) {
-    // Change class of active link
-    $(".App-header .nav .active").removeClass("active");
-    $(event.target).parent().addClass("active");
+  getHeaderRoutes() {
+    if (isAuthenticated()) {
+      return [
+        {name: "Home",              path: "/"},
+        {name: "Sign up",           path: "/signup"},
+        {name: "Alerts",            path: "/alert"},
+        {name: "Users",             path: "/user"},
+        {name: "New order group",   path: "/ordergroup"},
+        {name: "List order groups", path: "/ordergrouplist"}
+      ];
+    }
+    else {
+      return [
+        {name: "Home",              path: "/"},
+        {name: "Login",             path: "/login"}
+      ];
+    }
   }
 
-  handleLogout(event) {
-    /*
-    $.ajax({
-      url: "http://localhost:4000/logout",
-      method: "GET",
+  componentDidMount() {
+    let _this = this;
 
-      success(data, textStatus, jqXHR) {
-        alert(JSON.stringify(data));
-
-        this.props.history.push("/login");
-      },
-
-      error(jqXHR, textStatus, errorThrown) {
-        alert("Error: " + textStatus);
-      }
+    globalEmitter.addListener('afterLogin', function() {
+      _this.handleLogin();
     });
-    */
-    window.location.href = "/login";
+
+    globalEmitter.addListener('afterLogout', function() {
+      _this.handleLogout();
+    });
+  }
+
+  handleLogin() {
+    this.setState({routes: this.getHeaderRoutes()});
+  }
+
+  handleLogout() {
+    this.setState({routes: this.getHeaderRoutes()});
   }
 
   render() {
     return <App
-      routes={this.state.routes}
-      onNavigation={this.handleNavigation}
-      onLogout={this.handleLogout} />;
+      routes={this.state.routes} />;
   }
 }
 

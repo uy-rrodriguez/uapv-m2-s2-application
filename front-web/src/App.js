@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { BrowserRouter, Route, Link } from "react-router-dom";
+import { Navbar, Nav} from "react-bootstrap";
 
 //import logo from "./assets/img/logo.svg";
 import "./assets/css/App.css";
@@ -11,50 +12,52 @@ import UserListController from "./UserListController";
 import OrderGroupController from "./OrderGroupController";
 import OrderGroupListController from "./OrderGroupListController";
 import PropTypes from "prop-types";
+import HomeController from "./HomeController";
+import RouteNavItem from "./components/RouteNavItem";
+import ButtonLogoutController from "./ButtonLogoutController";
 
 
 class App extends Component {
   render() {
     const listRoutes = this.props.routes.map((route, key) =>
-      <li key={key} className={window.location.href.match("" + route.path + "$") ? "active" : ""}>
-        <Link to={route.path} onClick={this.props.onNavigation}>{route.name}</Link>
-      </li>
+      <RouteNavItem key={key} href={route.path}>{route.name}</RouteNavItem>
     );
 
     return (
       <BrowserRouter>
         <div className="App">
           <header className="App-header">
-            <nav className="navbar navbar-inverse">
-              <div className="container-fluid">
+            <Navbar>
+              <Navbar.Header>
+                <button type="button" className="navbar-toggle collapsed" data-toggle="collapse"
+                        data-target="#App-header-menu" aria-expanded="false">
+                  <span className="sr-only">Toggle navigation</span>
+                  <span className="icon-bar" />
+                  <span className="icon-bar" />
+                  <span className="icon-bar" />
+                </button>
+                <Navbar.Brand>
+                  <Link to="/" onClick={this.props.onNavigation}>89Dis</Link>
+                </Navbar.Brand>
+              </Navbar.Header>
 
-                <div className="navbar-header">
-                  <button type="button" className="navbar-toggle collapsed" data-toggle="collapse"
-                          data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-                    <span className="sr-only">Toggle navigation</span>
-                    <span className="icon-bar" />
-                    <span className="icon-bar" />
-                    <span className="icon-bar" />
-                  </button>
-                  <Link className="navbar-brand" to="/" onClick={this.props.onNavigation}>89Dis</Link>
-                </div>
+              <Nav>
+                {listRoutes}
+              </Nav>
 
-                <div className="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                  <ul className="nav navbar-nav">
-                    {listRoutes}
-                  </ul>
-                  <button type="button" className="btn btn-danger App-btn-logout" onClick={this.props.onLogout}>Log out</button>
-                </div>
-              </div>
-            </nav>
+              <Route component={ButtonLogoutController} />
+            </Navbar>
           </header>
 
-          <Route exact path="/(login)?" component={LoginFormController} />
-          <Route path="/signup" component={SignupFormController} />
-          <Route path="/alert" component={AlertListController} />
-          <Route path="/user" component={UserListController} />
-          <Route path="/ordergroup" component={OrderGroupController} />
-          <Route path="/ordergrouplist" component={OrderGroupListController} />
+          <div className="container">
+            <Route exact path="/" component={HomeController} />
+            <Route path="/login" component={LoginFormController} />
+            <Route path="/signup" component={SignupFormController} />
+            <Route path="/alert" component={AlertListController} />
+            <Route path="/user" component={UserListController} />
+            <Route path="/ordergroup" component={OrderGroupController} />
+            <Route path="/ordergrouplist" component={OrderGroupListController} />
+          </div>
         </div>
       </BrowserRouter>
     );
@@ -62,9 +65,7 @@ class App extends Component {
 }
 
 App.propTypes = {
-  routes: PropTypes.array.isRequired,
-  onNavigation: PropTypes.func.isRequired,
-  onLogout: PropTypes.func.isRequired
+  routes: PropTypes.array.isRequired
 };
 
 export default App;

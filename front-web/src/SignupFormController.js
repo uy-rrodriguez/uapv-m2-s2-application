@@ -1,7 +1,8 @@
 import React, { Component } from "react";
 import SignupForm from "./SignupForm";
-
 import $ from "jquery";
+import isAuthenticated from "./helpers/isAuthenticated";
+import { Redirect } from "react-router-dom";
 
 class SignupFormController extends Component {
   constructor(props) {
@@ -52,6 +53,10 @@ class SignupFormController extends Component {
   }
 
   render() {
+    if (! isAuthenticated()) {
+      return <Redirect to="/login" />;
+    }
+
     return <SignupForm
       user={this.state.user}
       password={this.state.password}

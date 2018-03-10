@@ -1,6 +1,8 @@
-import React, { Component } from "react";
+import React, {Component} from "react";
 import OrderGroup from "./OrderGroup";
 import $ from "jquery";
+import isAuthenticated from "./helpers/isAuthenticated";
+import { Redirect } from "react-router-dom";
 
 class SectionCell {
   constructor(row, column, active, product, quantity) {
@@ -132,6 +134,10 @@ class OrderGroupController extends Component {
   }
 
   render() {
+    if (! isAuthenticated()) {
+      return <Redirect to="/login" />;
+    }
+
     return <OrderGroup
       orderGroup={this.state.orderGroup}
       sectionGrid={this.state.sectionGrid} />;

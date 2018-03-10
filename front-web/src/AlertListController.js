@@ -1,6 +1,8 @@
-import React, { Component } from "react";
+import React, {Component} from "react";
 import AlertList from "./AlertList";
 import $ from "jquery";
+import isAuthenticated from "./helpers/isAuthenticated";
+import { Redirect } from "react-router-dom";
 
 class AlertListController extends Component {
   constructor(props) {
@@ -77,6 +79,10 @@ class AlertListController extends Component {
   }
 
   render() {
+    if (! isAuthenticated()) {
+      return <Redirect to="/login" />;
+    }
+
     return <AlertList
       alerts={this.state.alerts}
       onStockChange={this.handleStockChange}

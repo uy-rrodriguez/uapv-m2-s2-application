@@ -1,6 +1,8 @@
-import React, { Component } from "react";
+import React, {Component} from "react";
 import OrderGroupList from "./OrderGroupList";
 import $ from "jquery";
+import isAuthenticated from "./helpers/isAuthenticated";
+import { Redirect } from "react-router-dom";
 
 class OrderGroupListController extends Component {
   constructor(props) {
@@ -117,6 +119,10 @@ class OrderGroupListController extends Component {
   }
 
   render() {
+    if (! isAuthenticated()) {
+      return <Redirect to="/login" />;
+    }
+
     return <OrderGroupList
       orderGroups={this.state.orderGroups} />;
   }

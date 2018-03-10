@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import UserList from "./UserList";
 import $ from "jquery";
+import isAuthenticated from "./helpers/isAuthenticated";
+import { Redirect } from "react-router-dom";
 
 class UserListController extends Component {
   constructor(props) {
@@ -30,6 +32,10 @@ class UserListController extends Component {
   }
 
   render() {
+    if (! isAuthenticated()) {
+      return <Redirect to="/login" />;
+    }
+
     return <UserList
       users={this.state.users} />;
   }

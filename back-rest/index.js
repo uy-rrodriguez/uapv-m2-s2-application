@@ -105,15 +105,11 @@ app.get('/ordergroup', function(req, res) {
 
 app.put('/ordergroup/:id', function(req, res) {
   let sql1 = `SELECT * FROM "order_status" WHERE name = ?`;
-  let sql2 = `SELECT * FROM "order_group" WHERE id = ?`;
-  let sql3 = `SELECT * FROM "order_group_line" WHERE id_order_group = ?`;
-  let sql4 = `UPDATE "order" SET id_order_status = ?`;
-  
-  let sql = `SELECT "order_group_line".*
+  let sql2 = `SELECT "order_group_line".*
             FROM "order_group"
             INNER JOIN "order_group_line" ON "order_group".id = "order_group_line".id_order_group
             WHERE "order_group".id = ?`;
-  
+  let sql3 = `UPDATE "order" SET id_order_status = ?`;
   let conn;
   let params = [];
   try {
@@ -123,19 +119,19 @@ app.put('/ordergroup/:id', function(req, res) {
         if (err) res.json({result: false, message: err.message});
         if (row) {
           params.push(row.id);
-          conn.all(sql, [req.params.id], function(err, rows) {
+          conn.all(sql2, [req.params.id], function(err, rows) {
             if (err) res.json({result: false, message: err.message});
             if (rows) {
-              sql4 += ` WHERE id IN (`;
+              sql3 += ` WHERE id IN (`;
               for (var i = 0; i < rows.length; i++) {
                 if (i > 0) {
-                  sql4 += `, `;
+                  sql3 += `, `;
                 }
-                sql4 += `?`;
+                sql3 += `?`;
                 params.push(rows[i].id_order);
               }
-              sql4 += `)`;
-              conn.run(sql4, params, function(err) {
+              sql3 += `)`;
+              conn.run(sql3, params, function(err) {
                 if (err) {
                   res.json({result: false, message: err.message});
                 }
@@ -247,18 +243,47 @@ app.delete('/alert/:id', function(req, res) {
 });
 
 app.get('/ordergrouplist', function(req, res) {
-  res.json({result: false, message: "Not yet implemented."});
+  let sql = `SELECT "order_group".*, "order_group_line".*, "order".*
+            FROM "order_group"
+            INNER JOIN "order_group_line" ON "order_group".id = "order_group_line".id_order_group
+            INNER JOIN "order" ON "order_group_line".id_order = "order".id
+            ORDER BY "order".date DESC`;
+  let conn;
+  try {
+    conn = db.connect();
+    conn.all(sql, [], function(err, rows) {
+      if (err) res.json({result: false, message: err.message});
+      if (rows) {
+        res.json({result: true, orders: rows});
+      }
+      else {
+        res.json({result: false, message: "Unable to retrieve all order group !"});
+      }
+    });
+  }
+  catch (e) {
+    res.json({result: false, message: e.message});
+  }
+  finally {
+    db.close();
+  }
 });
 
-/* ******************************************************************************************* *
-    Database creation
- * ******************************************************************************************* */
-
-db.connect();
-//db.dropTables();
-//db.createTables();
-db.insertData();
-db.close();
+app.get('/setup', function(req, res) {
+  try {
+    db.connect();
+    db.dropTables();
+    db.createTables();
+    db.insertData();
+    res.json({result: true});
+  }
+  catch (e) {
+    res.json({result: false, message: e.message});
+  }
+  finally {
+    db.close();
+  }
+});
 
 /* ******************************************************************************************* *
     Server initialization

@@ -107,6 +107,9 @@ var roleData = `REPLACE INTO "role"(id, name) VALUES (
   2, "Manager"), (
   3, "Préparateur de commande")`;
 
+var userData = `REPLACE INTO "user"(id, id_role, name, password, max_weight) VALUES (
+  1, 1, "test", "test", 45.5)`;
+
 var sectionData = `REPLACE INTO "section"(id, row, column) VALUES (
   1, 1, 1), (
   2, 1, 2), (
@@ -271,6 +274,26 @@ var rackData = `REPLACE INTO "rack"(id, id_section, row, column) VALUES (
   143, 16, 3, 2), (
   144, 16, 3, 3)`;
 
+var productData = `REPLACE INTO "product"(id, id_rack, name, stock, weight) VALUES (
+  1, 1, "test1", 10, 25.5)`;
+
+var alertData = `REPLACE INTO "alert"(id, id_product, id_alert_status, stock) VALUES (
+  1, 1, 1, 25.5), (
+  2, 1, 1, 50)`;
+
+var orderGroupData = `REPLACE INTO "order_group"(id, id_user, total_weight) VALUES (
+  1, 1, 84.7)`;
+
+var orderGroupLineData = `REPLACE INTO "order_group_line"(id_order_group, id_order) VALUES (
+  1, 1), (
+  1, 2)`;
+
+var orderData = `REPLACE INTO "order"(id, id_order_status, client, date) VALUES (
+  1, 1, "test", "2018-03-08 14:00:00"), (
+  2, 1, "test", "2018-03-08 15:00:00"), (
+  3, 2, "test", "2018-03-10 17:00:00"), (
+  4, 2, "test", "2018-03-10 17:30:00")`;
+
 module.exports = new class DB {
   constructor() {
     this.connection = null;
@@ -332,5 +355,12 @@ module.exports = new class DB {
     this.connection.run(roleData);
     this.connection.run(sectionData);
     this.connection.run(rackData);
+    // TEST ////////////////////////////////////////////////////////////////////
+    this.connection.run(userData);
+    this.connection.run(productData);
+    this.connection.run(alertData);
+    this.connection.run(orderData);
+    this.connection.run(orderGroupData);
+    this.connection.run(orderGroupLineData);
   }
 };

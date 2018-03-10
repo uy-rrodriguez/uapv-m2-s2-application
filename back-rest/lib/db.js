@@ -290,7 +290,9 @@ var orderGroupLineData = `REPLACE INTO "order_group_line"(id_order_group, id_ord
 
 var orderData = `REPLACE INTO "order"(id, id_order_status, client, date) VALUES (
   1, 1, "test", "2018-03-08 14:00:00"), (
-  2, 1, "test", "2018-03-08 15:00:00")`;
+  2, 1, "test", "2018-03-08 15:00:00"), (
+  3, 2, "test", "2018-03-10 17:00:00"), (
+  4, 2, "test", "2018-03-10 17:30:00")`;
 
 module.exports = new class DB {
   constructor() {

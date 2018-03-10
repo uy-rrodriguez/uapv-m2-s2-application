@@ -40,8 +40,8 @@ app.post("/login", function(req, res, next) {
   res.status(200).end()
   */
 
-  let sql =`SELECT id, name
-            FROM user
+  let sql = `SELECT id, name
+            FROM "user"
             WHERE name = ? AND password = ?`;
 
   // Get first row only
@@ -100,7 +100,65 @@ app.get('/logout', function(req, res) {
 });
 
 app.get('/ordergroup', function(req, res) {
-  res.json({result: false, message: "Not yet implemented."});
+  let sql1 = `INSERT INTO "order_group"(id_user, total_weight) VALUES (?, ?)`;
+  let sql2 = `SELECT * FROM "order_group" ORDER BY id DESC`;
+  let sql3 = `SELECT "order".*
+              FROM "order"
+              INNER JOIN "order_status" ON "order".id_order_status = "order_status".id
+              WHERE "order_status".id = ?`;
+  let sql4 = `INSERT INTO "order_group_line"(id_order_group, id_order)`;
+  let sql5 = `UPDATE "order_group" SET total_weight = ? WHERE id = ?`;
+  let conn;
+  let params = [];
+  let id;
+  let total_weight = 0;
+  try {
+    conn = db.connect();
+    conn.run(sql1, [1, 0], function(err) {
+      if (err) {
+        res.json({result: false, message: err.message});
+      }
+      else {
+        conn.get(sql2, function(err, row) {
+          if (err) res.json({result: false, message: err.message});
+          if (row) {
+            id = row.id;
+            conn.all(sql3, [2], function(err, rows) {
+              if (err) res.json({result: false, message: err.message});
+              if (rows) {
+                sql4 += ` VALUES `;
+                for (var i = 0; i < rows.length; i++) {
+                  if (i > 0) {
+                    sql4 += `, `;
+                  }
+                  sql4 += `(?, ?)`;
+                  params.push(id);
+                  params.push(rows[i].id);
+                }
+                conn.run(sql4, params, function(err) {
+                  if (err) {
+                    res.json({result: false, message: err.message});
+                  }
+                  else {
+                    res.json({result: true});
+                  }
+                });
+              }
+            });
+          }
+          else {
+            res.json({result: false, message: "Unable to create order group !"});
+          }
+        });
+      }
+    });
+  }
+  catch (e) {
+    res.json({result: false, message: e.message});
+  }
+  finally {
+    db.close();
+  }
 });
 
 app.put('/ordergroup/:id', function(req, res) {
@@ -213,7 +271,7 @@ app.delete('/alert/:id', function(req, res) {
   try {
     conn = db.connect();
     conn.serialize(function() {
-      conn.get(sql1, [req.params.id], (err, row) => {
+      conn.get(sql1, [req.params.id], function(err, row) {
         if (err) res.json({result: false, message: err.message});
         if (row) {
           conn.run(sql2, [req.body.stock, row.id_product], function(err) {
@@ -284,6 +342,14 @@ app.get('/setup', function(req, res) {
     db.close();
   }
 });
+
+// SI CES FONCTIONS NE SONT PAS APPELEES, LES METHODES DE L'API PLANTENT
+// TROUVER UNE SOLUTION POUR LES SUPPRIMER
+db.connect();
+//db.dropTables();
+//db.createTables();
+db.insertData();
+db.close();
 
 /* ******************************************************************************************* *
     Server initialization

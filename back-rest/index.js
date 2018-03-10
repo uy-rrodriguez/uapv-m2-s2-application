@@ -95,10 +95,12 @@ app.post("/signin", function(req, res) {
   }
 });
 
-app.get('/logout', function(req, res) {});
+app.get('/logout', function(req, res) {
+  res.json({result: false, message: "Not yet implemented."});
+});
 
 app.get('/ordergroup', function(req, res) {
-  
+  res.json({result: false, message: "Not yet implemented."});
 });
 
 app.put('/ordergroup/:id', function(req, res) {
@@ -245,7 +247,7 @@ app.delete('/alert/:id', function(req, res) {
 });
 
 app.get('/ordergrouplist', function(req, res) {
-  
+  res.json({result: false, message: "Not yet implemented."});
 });
 
 /* ******************************************************************************************* *

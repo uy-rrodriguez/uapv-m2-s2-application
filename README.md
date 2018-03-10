@@ -42,17 +42,24 @@ As stated after creating the application :
 ```cd front-web; npm start```
 The last command will start a local server on port 3000 and open a browser. The initial application will show a simple index page with a title and a logo. Changes to the files will be instantly updated on the browser.
 
-```npm install --save react-bootstrap```
-Install React-Bootstrap to add Bootstrap capabilities to our React applications.
+```npm install --save bootstrap@3.3.7 react-bootstrap```
+Install Bootstrap and React-Bootstrap to add Bootstrap capabilities to our React applications.
+
+```npm install --save jquery```
+Install jQuery to access DOM elements and do asynchronous calls to the back-end API.
 
 Then, in index.js, we can import the css from de node_modules directory. The full code of index.js at this stage is copied below:
 ```javascript
 import React from 'react';
 import ReactDOM from 'react-dom';
+import registerServiceWorker from './registerServiceWorker';
+import App from './App';
+
+import "../node_modules/jquery/dist/jquery.min";
+import "../node_modules/react-bootstrap/dist/react-bootstrap.min";
+
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 import './index.css';
-import App from './App';
-import registerServiceWorker from './registerServiceWorker';
 
 ReactDOM.render(<App />, document.getElementById('root'));
 registerServiceWorker();

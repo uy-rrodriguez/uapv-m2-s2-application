@@ -101,55 +101,51 @@ app.get('/ordergroup', function(req, res) {
   
 });
 
-app.put('/ordergroup/:uid', function(req, res) {
+app.put('/ordergroup/:id', function(req, res) {
   let sql1 = `SELECT * FROM "order_status" WHERE name = ?`;
   let sql2 = `SELECT * FROM "order_group" WHERE id = ?`;
   let sql3 = `SELECT * FROM "order_group_line" WHERE id_order_group = ?`;
-  let sql4 = `UPDATE "order" SET id_order_status = ? WHERE id = ?`;
+  let sql4 = `UPDATE "order" SET id_order_status = ?`;
+  
+  let sql = `SELECT "order_group_line".*
+            FROM "order_group"
+            INNER JOIN "order_group_line" ON "order_group".id = "order_group_line".id_order_group
+            WHERE "order_group".id = ?`;
+  
   let conn;
-  let status;
+  let params = [];
   try {
     conn = db.connect();
     conn.serialize(function() {
       conn.get(sql1, [req.body.status], function(err, row) {
         if (err) res.json({result: false, message: err.message});
         if (row) {
-          
-          status = row.id;
-          conn.get(sql2, [req.params.id], function(err, row) {
+          params.push(row.id);
+          conn.all(sql, [req.params.id], function(err, rows) {
             if (err) res.json({result: false, message: err.message});
-            if (row) {
-              conn.all(sql3, [row.id], function(err, rows) {
-                if (err) res.json({result: false, message: err.message});
-                if (rows) {
-                  for (var row in rows) {
-                    conn.run(sql4, [status, row.id_order], function(err) {
-                      if (err) res.json({result: false, message: err.message});
-                    });
-                  }
-                  res.json({result: true});
+            if (rows) {
+              sql4 += ` WHERE id IN (`;
+              for (var i = 0; i < rows.length; i++) {
+                if (i > 0) {
+                  sql4 += `, `;
+                }
+                sql4 += `?`;
+                params.push(rows[i].id_order);
+              }
+              sql4 += `)`;
+              conn.run(sql4, params, function(err) {
+                if (err) {
+                  res.json({result: false, message: err.message});
                 }
                 else {
-                  res.json({result: false, message: "Unable to retrieve each order !"});
+                  res.json({result: true});
                 }
               });
             }
             else {
-              res.json({result: false, message: "Unable to retrieve order group from specified id !"});
+              res.json({result: false, message: "Unable to retrieve each order !"});
             }
           });
-          
-          /*
-          conn.run(sql2, [row.id, req.params.id], function(err) {
-            if (err) {
-              res.json({result: false, message: err.message});
-            }
-            else {
-              res.json({result: true});
-            }
-          });
-          */
-          
         }
         else {
           res.json({result: false, message: "Unable to retrieve specified status !"});
@@ -248,7 +244,9 @@ app.delete('/alert/:id', function(req, res) {
   }
 });
 
-app.get('/ordergrouplist', function(req, res) {});
+app.get('/ordergrouplist', function(req, res) {
+  
+});
 
 /* ******************************************************************************************* *
     Database creation

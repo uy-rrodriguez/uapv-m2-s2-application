@@ -6,6 +6,7 @@ let express = require("express");
 let cors = require("cors");
 let bodyParser = require("body-parser");
 let db = require("./lib/db");
+let auth = require("./lib/auth.js");
 
 let app = express();
 
@@ -330,8 +331,8 @@ app.get('/ordergrouplist', function(req, res) {
 app.get('/setup', function(req, res) {
   try {
     db.connect();
-    db.dropTables();
-    db.createTables();
+    //db.dropTables();
+    //db.createTables();
     db.insertData();
     res.json({result: true});
   }
@@ -343,13 +344,26 @@ app.get('/setup', function(req, res) {
   }
 });
 
-// SI CES FONCTIONS NE SONT PAS APPELEES, LES METHODES DE L'API PLANTENT
-// TROUVER UNE SOLUTION POUR LES SUPPRIMER
-db.connect();
-//db.dropTables();
-//db.createTables();
-db.insertData();
-db.close();
+app.get('/test', function(req, res) {
+  //res.json({result: false, message: "Not yet implemented !"});
+  res.json({user: auth.test()});
+});
+
+try {
+  // SI CES FONCTIONS NE SONT PAS APPELEES, LES METHODES DE L'API PLANTENT
+  // TROUVER UNE SOLUTION POUR LES SUPPRIMER
+  db.connect();
+  //db.dropTables();
+  db.createTables();
+  //db.insertData();
+  db.close();
+  auth.authenticate();
+}
+catch (e) {
+  console.log(e.message);
+}
+
+
 
 /* ******************************************************************************************* *
     Server initialization

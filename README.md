@@ -103,3 +103,41 @@ app.listen(4000)
 
 ```npm start``` or ```node index.js``` 
 Will start a local server listening on port 4000. We can open a new browser windows and send a request to localhost:4000/index to get the response.
+
+
+# React Native : Creating and building the native Android application #
+
+```npm install -g create-react-native-app```
+This will install the command to create a new React Native application, ready for development and producting environments.
+
+```create-react-native-app front-mobile```
+This will install react-native-scripts and then create a new React Native project.
+
+As stated after creating the application :
+ - npm start:
+    Starts the development server so you can open your app in the Expo
+    app on your phone.
+
+  - npm run ios:
+    (Mac only, requires Xcode)
+    Starts the development server and loads your app in an iOS simulator.
+
+  - npm run android:
+    (Requires Android build tools)
+    Starts the development server and loads your app on a connected Android
+    device or emulator.
+
+  - npm test:
+    Starts the test runner.
+
+  - npm run eject:
+    Removes this tool and copies build dependencies, configuration files
+    and scripts into the app directory. If you do this, you can’t go back!
+
+```cd front-mobile; npm start```
+The command will start a local development server on port 3000 and show a QR code. This code must be scanned with a mobile device connected to the same network as the development machine. We downloaded the Android application Expo to scan the code and connect the smartphone to the development server. Changes to the files will be instantly updated on the mobile phone.
+
+```npm install --save react-navigation```
+We use the community library React Navigation to navigate between screens.
+
+

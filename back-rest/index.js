@@ -25,74 +25,78 @@ app.use(bodyParser.urlencoded({extended: false}));
  * ******************************************************************************************* */
 
 app.get("/index", function(req, res) {
-  res.json({result: "It's alive!"});
-});
-
-app.post("/login", function(req, res, next) {
-  //console.log(req.body);
-
   /*
   if(!req.body.notes || typeof req.body.notes != "string") {
     res.status(400).send("400 Bad Request")
   }
-
   req.user.customData.notes = req.body.notes
   req.user.customData.save()
   res.status(200).end()
   */
+  res.json({result: "It's alive!"});
+});
 
-  let sql = `SELECT id, name
-            FROM "user"
-            WHERE name = ? AND password = ?`;
-
-  // Get first row only
+app.post("/login", function(req, res) {
   try {
-    let dbconn = db.connect();
-    dbconn.get(sql, [req.body.user, req.body.password], (err, row) => {
-      try {
-        if (err) {
-          throw err;
-        }
-
-        if (row) {
-          res.json({result: true, id: row.id, name: row.name});
-        }
-        else {
-          throw "No user found with the given credentials";
-        }
+    auth.user().findOne({ where: {name: req.body.user}}).then(user => {
+      if (!user) {
+        res.json({result: false, message: "Unknows user !"});
       }
-      catch (e) {
-        res.json({result: false, error: e.message});
+      else if (req.body.password != user.password) {
+        res.json({result: false, message: "Invalid password !"});
+      }
+      else {
+        auth.role().findOne({ where: {id: user.id_role}}).then(role => {
+          if (!role) {
+            res.json({result: false, message: "Unable to retrieve user's access !"});
+          }
+          else {
+            res.json({result: true, user: {
+                id: user.id,
+                id_role: role.name,
+                name: user.name,
+                password: user.password,
+                max_weight: user.max_weight
+            }});
+          }
+        });
       }
     });
   }
-  catch(e) {
-    res.json({result: false, error: e.message});
+  catch (e) {
+    res.json({result: false, message: e.message});
   }
 });
 
 app.post("/signin", function(req, res) {
-  //console.log(req.body);
-
-  let sql ="INSERT INTO user (name, password) VALUES (?, ?)";
-
   try {
-    let dbconn = db.connect();
-    dbconn.run(sql, [req.body.user, req.body.password], (err) => {
-      try {
-        if (err) {
-          throw err;
-        }
-
-        res.json({result: true, message: "The user has been successfully created"});
+    auth.role().findOne({ where: {name: req.body.role}}).then(role => {
+      if (!role) {
+        res.json({result: false, message: "Unable to determine user's role !"});
       }
-      catch (e) {
-        res.json({result: false, error: e.message});
+      else {
+        auth.user().findOne({ where: {name: req.body.user}}).then(user => {
+          if (user) {
+            res.json({result: false, message: "Username is already existing !"});
+          }
+          else {
+            result = auth.user().create({
+              id_role: role.id, name: req.body.user, password: req.body.password, max_weight: req.body.maxWeight
+            }).then(create => {
+              if (!create) {
+                res.json({result: false, message: "User creation failed !"});
+              }
+              else {
+                res.json({result: true});
+              }
+            });
+          }
+        });
       }
     });
   }
-  catch(e) {
-    res.json({result: false, error: e.message});
+  catch (e) {
+    res.json({result: false, message: e.message});
   }
 });
 
@@ -349,6 +353,43 @@ app.get('/test', function(req, res) {
   res.json({user: auth.test()});
 });
 
+////////////////////////////////////////////////////////////////////////////////
+// PASSPORT DEFINITION /////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+/*
+var passport = require('passport');
+
+var LocalStrategy = require('passport-local').Strategy;
+
+passport.serializeUser(function(user, done) {
+  done(null, user.id);
+});
+
+passport.deserializeUser(function(id, done) {
+  auth.User.find({where: {id: id}}).success(function(user){
+    done(null, user);
+  }).error(function(err){
+    done(err, null);
+  });
+});
+
+passport.use(new LocalStrategy(
+  function(username, password, done) {
+    auth.User.find({ where: { name: name }}).success(function(user) {
+      if (!user) {
+        done(null, false, { message: 'Unknown user' });
+      } else if (password != user.password) {
+        done(null, false, { message: 'Invalid password'});
+      } else {
+        done(null, user);
+      }
+    }).error(function(err){
+      done(err);
+    });
+  }
+));
+*/
+
 try {
   // SI CES FONCTIONS NE SONT PAS APPELEES, LES METHODES DE L'API PLANTENT
   // TROUVER UNE SOLUTION POUR LES SUPPRIMER
@@ -357,13 +398,13 @@ try {
   db.createTables();
   //db.insertData();
   db.close();
+  
   auth.authenticate();
+  
 }
 catch (e) {
   console.log(e.message);
 }
-
-
 
 /* ******************************************************************************************* *
     Server initialization

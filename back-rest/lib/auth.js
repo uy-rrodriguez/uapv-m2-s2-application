@@ -5,6 +5,7 @@ var Sequelize = require('sequelize');
 module.exports = new class Auth {
   
   constructor() {
+    
     this.sequelize = new Sequelize('back-rest.db', '', '', {
       host: 'localhost',
       dialect: 'sqlite',
@@ -41,7 +42,7 @@ module.exports = new class Auth {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: Role,
+          model: this.Role,
           key: 'id',
           deferrable: Sequelize.Deferrable.INITIALLY_IMMEDIATE
         }
@@ -53,10 +54,11 @@ module.exports = new class Auth {
       freezeTableName: true,
       timestamps: false,
       tableName: 'user'
-    });
+    });    
   }
   
   test() {
+    
     this.User.sync();
     
     var user = this.User.create({ id_role: 1, name: 'name', password: 'password', max_weight: 50});
@@ -67,6 +69,7 @@ module.exports = new class Auth {
   }
   
   authenticate() {
+    
     this.sequelize.authenticate()
             .then(() => {
               console.log('Connection has been established successfully.');
@@ -76,8 +79,16 @@ module.exports = new class Auth {
             });
   }
   
+  user() {
+    this.User.sync();
+    
+    return this.User;
+  }
+  
+  role() {
+    this.Role.sync();
+    
+    return this.Role;
+  }
+  
 }
-
-
-
-

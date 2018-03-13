@@ -335,8 +335,6 @@ app.get('/ordergrouplist', function(req, res) {
 app.get('/setup', function(req, res) {
   try {
     db.connect();
-    //db.dropTables();
-    //db.createTables();
     db.insertData();
     res.json({result: true});
   }
@@ -349,8 +347,8 @@ app.get('/setup', function(req, res) {
 });
 
 app.get('/test', function(req, res) {
-  //res.json({result: false, message: "Not yet implemented !"});
-  res.json({user: auth.test()});
+  auth.test();
+  res.json({result: true});
 });
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -391,16 +389,12 @@ passport.use(new LocalStrategy(
 */
 
 try {
-  // SI CES FONCTIONS NE SONT PAS APPELEES, LES METHODES DE L'API PLANTENT
-  // TROUVER UNE SOLUTION POUR LES SUPPRIMER
+  /*
   db.connect();
-  //db.dropTables();
   db.createTables();
-  //db.insertData();
   db.close();
-  
+  */
   auth.authenticate();
-  
 }
 catch (e) {
   console.log(e.message);

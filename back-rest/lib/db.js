@@ -294,6 +294,9 @@ var orderData = `REPLACE INTO "order"(id, id_order_status, client, date) VALUES 
   3, 2, "test", "2018-03-10 17:00:00"), (
   4, 2, "test", "2018-03-10 17:30:00")`;
 
+var orderLineData = `REPLACE INTO "order_line"(id_product, id_order, quantity) VALUES (
+  1, 1, 10)`;
+
 module.exports = new class DB {
   constructor() {
     this.connection = null;
@@ -360,6 +363,7 @@ module.exports = new class DB {
     this.connection.run(productData);
     this.connection.run(alertData);
     this.connection.run(orderData);
+    this.connection.run(orderLineData);
     this.connection.run(orderGroupData);
     this.connection.run(orderGroupLineData);
   }

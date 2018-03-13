@@ -351,43 +351,6 @@ app.get('/test', function(req, res) {
   res.json({result: true});
 });
 
-////////////////////////////////////////////////////////////////////////////////
-// PASSPORT DEFINITION /////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-/*
-var passport = require('passport');
-
-var LocalStrategy = require('passport-local').Strategy;
-
-passport.serializeUser(function(user, done) {
-  done(null, user.id);
-});
-
-passport.deserializeUser(function(id, done) {
-  auth.User.find({where: {id: id}}).success(function(user){
-    done(null, user);
-  }).error(function(err){
-    done(err, null);
-  });
-});
-
-passport.use(new LocalStrategy(
-  function(username, password, done) {
-    auth.User.find({ where: { name: name }}).success(function(user) {
-      if (!user) {
-        done(null, false, { message: 'Unknown user' });
-      } else if (password != user.password) {
-        done(null, false, { message: 'Invalid password'});
-      } else {
-        done(null, user);
-      }
-    }).error(function(err){
-      done(err);
-    });
-  }
-));
-*/
-
 try {
   /*
   db.connect();

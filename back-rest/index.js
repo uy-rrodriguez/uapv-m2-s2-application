@@ -6,7 +6,7 @@ let express = require("express");
 let cors = require("cors");
 let bodyParser = require("body-parser");
 let db = require("./lib/db");
-let auth = require("./lib/auth.js");
+let dbManager = require("./lib/db-manager.js");
 
 let app = express();
 
@@ -38,7 +38,7 @@ app.get("/index", function(req, res) {
 
 app.post("/login", function(req, res) {
   try {
-    auth.user().findOne({ where: {name: req.body.user}}).then(user => {
+    dbManager.user().findOne({ where: {name: req.body.user}}).then(user => {
       if (!user) {
         res.json({result: false, message: "Unknows user !"});
       }
@@ -46,7 +46,7 @@ app.post("/login", function(req, res) {
         res.json({result: false, message: "Invalid password !"});
       }
       else {
-        auth.role().findOne({ where: {id: user.id_role}}).then(role => {
+        dbManager.role().findOne({ where: {id: user.id_role}}).then(role => {
           if (!role) {
             res.json({result: false, message: "Unable to retrieve user's access !"});
           }
@@ -70,17 +70,17 @@ app.post("/login", function(req, res) {
 
 app.post("/signin", function(req, res) {
   try {
-    auth.role().findOne({ where: {name: req.body.role}}).then(role => {
+    dbManager.role().findOne({ where: {name: req.body.role}}).then(role => {
       if (!role) {
         res.json({result: false, message: "Unable to determine user's role !"});
       }
       else {
-        auth.user().findOne({ where: {name: req.body.user}}).then(user => {
+        dbManager.user().findOne({ where: {name: req.body.user}}).then(user => {
           if (user) {
             res.json({result: false, message: "Username is already existing !"});
           }
           else {
-            result = auth.user().create({
+            result = dbManager.user().create({
               id_role: role.id, name: req.body.user, password: req.body.password, max_weight: req.body.maxWeight
             }).then(create => {
               if (!create) {
@@ -347,7 +347,7 @@ app.get('/setup', function(req, res) {
 });
 
 app.get('/test', function(req, res) {
-  auth.test();
+  dbManager.test();
   res.json({result: true});
 });
 
@@ -357,7 +357,7 @@ try {
   db.createTables();
   db.close();
   */
-  auth.authenticate();
+  dbManager.authenticate();
 }
 catch (e) {
   console.log(e.message);

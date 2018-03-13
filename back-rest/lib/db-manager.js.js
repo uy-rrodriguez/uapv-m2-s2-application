@@ -2,7 +2,7 @@
 
 var Sequelize = require('sequelize');
 
-module.exports = new class Auth {
+module.exports = new class DBManager {
   
   constructor() {
     this.sequelize = new Sequelize('back-rest.db', '', '', {

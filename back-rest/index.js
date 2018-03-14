@@ -105,6 +105,77 @@ app.get('/logout', function(req, res) {
 });
 
 app.get('/ordergroup', function(req, res) {
+  let userId = 1;
+  try {
+    dbManager.sequelize.transaction(function(t) {
+      return dbManager.orderGroup().create({
+        id_user: userId,
+        total_weight: 0
+      }, {
+        transaction: t
+      }).then(orderGroup => {
+        return dbManager.order().findAll({
+          where: {
+            id_order_status: 2
+          },
+          include: [{
+            model: dbManager.orderLine(),
+            as: 'order_line',
+            include: [{
+              model: dbManager.product()
+            }]
+          }]
+        }).then(orders => {
+          let data = [];
+          let total_weight = 0;
+          let ids = [];
+          for (var i = 0; i < orders.length; i++) {
+            data.push({
+              id_order_group: orderGroup.id,
+              id_order: orders[i].id
+            });
+            for (var j = 0; j < orders[i].order_line.length; j++) {
+              total_weight += orders[i].order_line[j].product.weight;
+            }
+            ids.push(orders[i].id);
+          }
+          return dbManager.orderGroupLine().bulkCreate(data, {
+            transaction: t
+          }).then(() => {
+            return dbManager.orderGroup().update({
+              total_weight: total_weight
+            }, {
+              where: {
+                id: orderGroup.id
+              },
+              transaction: t
+            }).then(() => {
+              return dbManager.order().update({
+                id_order_status: 3
+              }, {
+                where: {
+                  id: {
+                    [dbManager.Op.in]: ids
+                  }
+                },
+                transaction: t
+              });
+            });
+          });
+        })
+      });
+    }).then(function(result) {
+      console.log('\nRESULT:\n' + result + '\n');
+      res.json({result: true});
+    }).catch(function(err) {
+      console.log('\nERR:\n' + err.message + '\n');
+      res.json({result: false, message: 'An error occured ! Unable to complete processing !'});
+    });
+  }
+  catch (e) {
+    res.json({result: false, message: e.message});
+  }
+  /*
   let sql1 = `INSERT INTO "order_group"(id_user, total_weight) VALUES (?, ?)`;
   let sql2 = `SELECT * FROM "order_group" ORDER BY id DESC`;
   let sql3 = `SELECT "order".*
@@ -164,6 +235,7 @@ app.get('/ordergroup', function(req, res) {
   finally {
     db.close();
   }
+  */
 });
 
 app.put('/ordergroup/:id', function(req, res) {
@@ -246,25 +318,17 @@ app.post('/alert', function(req, res) {
 });
 
 app.get('/alert', function(req, res) {
-  let sql1 = `SELECT * FROM "alert"`;
-  let conn;
   try {
-    conn = db.connect();
-    conn.all(sql1, function(err, rows) {
-      if (err) res.json({result: false, message: err.message});
-      if (rows) {
-        res.json({result: true, alerts: rows});
-      }
-      else {
-        res.json({result: false, message: "Unable to get alert list !"});
-      }
+    dbManager.alert().findAll({
+      where: {id_alert_status: 2},
+      include: [dbManager.product(), dbManager.alertStatus()]
+    }).then(alerts => {
+      if (!alerts) res.json({result: false, message: "Unable to get alert list"});
+      else res.json({result: true, alerts: alerts});
     });
   }
   catch (e) {
     res.json({result: false, message: e.message});
-  }
-  finally {
-    db.close();
   }
 });
 
@@ -306,29 +370,23 @@ app.delete('/alert/:id', function(req, res) {
 });
 
 app.get('/ordergrouplist', function(req, res) {
-  let sql = `SELECT "order_group".*, "order_group_line".*, "order".*
-            FROM "order_group"
-            INNER JOIN "order_group_line" ON "order_group".id = "order_group_line".id_order_group
-            INNER JOIN "order" ON "order_group_line".id_order = "order".id
-            ORDER BY "order".date DESC`;
-  let conn;
   try {
-    conn = db.connect();
-    conn.all(sql, [], function(err, rows) {
-      if (err) res.json({result: false, message: err.message});
-      if (rows) {
-        res.json({result: true, orders: rows});
-      }
-      else {
-        res.json({result: false, message: "Unable to retrieve all order group !"});
-      }
+    dbManager.orderGroup().findAll({
+      include: [dbManager.user(), {
+        model: dbManager.orderGroupLine(),
+        as: 'order_group_line',
+        include: [{
+          model: dbManager.order(),
+          include: [dbManager.orderStatus()]
+        }]
+      }]
+    }).then(orderGroups => {
+      if (!orderGroups) res.json({result: false});
+      else res.json({result: true, order_group: orderGroups});
     });
   }
   catch (e) {
     res.json({result: false, message: e.message});
-  }
-  finally {
-    db.close();
   }
 });
 

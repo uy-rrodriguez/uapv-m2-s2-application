@@ -3,7 +3,6 @@
 var Sequelize = require('sequelize');
 
 module.exports = new class DBManager {
-  
   constructor() {
     this.sequelize = new Sequelize('back-rest.db', '', '', {
       host: 'localhost',
@@ -18,7 +17,13 @@ module.exports = new class DBManager {
       operatorsAliases: false
     });
     
-    this.Role = this.sequelize.define('Role', {
+    
+    
+    this.Op = Sequelize.Op;
+    
+    
+    
+    this.Role = this.sequelize.define('role', {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
@@ -31,20 +36,13 @@ module.exports = new class DBManager {
       tableName: 'role'
     });
     
-    this.User = this.sequelize.define('User', {
+    
+    
+    this.User = this.sequelize.define('user', {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
         autoIncrement: true
-      },
-      id_role: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: this.Role,
-          key: 'id',
-          deferrable: Sequelize.Deferrable.INITIALLY_IMMEDIATE
-        }
       },
       name: Sequelize.TEXT,
       password: Sequelize.TEXT,
@@ -54,21 +52,18 @@ module.exports = new class DBManager {
       timestamps: false,
       tableName: 'user'
     });
+    this.User.belongsTo(this.Role, {
+      foreignKey: 'id_role',
+      foreignKeyConstraint: true
+    });
     
-    this.OrderGroup = this.sequelize.define('OrderGroup', {
+    
+    
+    this.OrderGroup = this.sequelize.define('order_group', {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
         autoIncrement: true
-      },
-      id_user: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: this.User,
-          key: 'id',
-          deferrable: Sequelize.Deferrable.INITIALLY_IMMEDIATE
-        }
       },
       total_weight: Sequelize.REAL
     }, {
@@ -76,8 +71,14 @@ module.exports = new class DBManager {
       timestamps: false,
       tableName: 'order_group'
     });
+    this.OrderGroup.belongsTo(this.User, {
+      foreignKey: 'id_user',
+      foreignKeyConstraint: true
+    });
     
-    this.OrderStatus = this.sequelize.define('OrderStatus', {
+    
+    
+    this.OrderStatus = this.sequelize.define('order_status', {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
@@ -90,20 +91,13 @@ module.exports = new class DBManager {
       tableName: 'order_status'
     });
     
-    this.Order = this.sequelize.define('Order', {
+    
+    
+    this.Order = this.sequelize.define('order', {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
         autoIncrement: true
-      },
-      id_order_status: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: this.OrderStatus,
-          key: 'id',
-          deferrable: Sequelize.Deferrable.INITIALLY_IMMEDIATE
-        }
       },
       client: Sequelize.TEXT,
       date: Sequelize.TEXT
@@ -112,8 +106,14 @@ module.exports = new class DBManager {
       timestamps: false,
       tableName: 'order'
     });
+    this.Order.belongsTo(this.OrderStatus, {
+      foreignKey: 'id_order_status',
+      foreignKeyConstraint: true
+    });
     
-    this.Section = this.sequelize.define('Section', {
+    
+    
+    this.Section = this.sequelize.define('section', {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
@@ -127,20 +127,13 @@ module.exports = new class DBManager {
       tableName: 'section'
     });
     
-    this.Rack = this.sequelize.define('Rack', {
+    
+    
+    this.Rack = this.sequelize.define('rack', {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
         autoIncrement: true
-      },
-      id_section: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: this.Section,
-          key: 'id',
-          deferrable: Sequelize.Deferrable.INITIALLY_IMMEDIATE
-        }
       },
       row: Sequelize.INTEGER,
       column: Sequelize.INTEGER
@@ -149,21 +142,18 @@ module.exports = new class DBManager {
       timestamps: false,
       tableName: 'rack'
     });
+    this.Rack.belongsTo(this.Section, {
+      foreignKey: 'id_section',
+      foreignKeyConstraint: true
+    });
     
-    this.Product = this.sequelize.define('Product', {
+    
+    
+    this.Product = this.sequelize.define('product', {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
         autoIncrement: true
-      },
-      id_rack: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: this.Rack,
-          key: 'id',
-          deferrable: Sequelize.Deferrable.INITIALLY_IMMEDIATE
-        }
       },
       name: Sequelize.TEXT,
       stock: Sequelize.INTEGER,
@@ -173,8 +163,14 @@ module.exports = new class DBManager {
       timestamps: false,
       tableName: 'product'
     });
+    this.Product.belongsTo(this.Rack, {
+      foreignKey: 'id_rack',
+      foreignKeyConstraint: true
+    });
     
-    this.AlertStatus = this.sequelize.define('AlertStatus', {
+    
+    
+    this.AlertStatus = this.sequelize.define('alert_status', {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
@@ -187,29 +183,13 @@ module.exports = new class DBManager {
       tableName: 'alert_status'
     });
     
-    this.Alert = this.sequelize.define('Alert', {
+    
+    
+    this.Alert = this.sequelize.define('alert', {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
         autoIncrement: true
-      },
-      id_product: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: this.Product,
-          key: 'id',
-          deferrable: Sequelize.Deferrable.INITIALLY_IMMEDIATE
-        }
-      },
-      id_alert_status: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: this.AlertStatus,
-          key: 'id',
-          deferrable: Sequelize.Deferrable.INITIALLY_IMMEDIATE
-        }
       },
       stock: Sequelize.INTEGER
     }, {
@@ -217,36 +197,86 @@ module.exports = new class DBManager {
       timestamps: false,
       tableName: 'alert'
     });
+    this.Alert.belongsTo(this.Product, {
+      foreignKey: 'id_product',
+      foreignKeyConstraint: true
+    });
+    this.Alert.belongsTo(this.AlertStatus, {
+      foreignKey: 'id_alert_status',
+      foreignKeyConstraint: true
+    });
     
-    this.OrderGroupLine = this.sequelize.define('OrderGroupLine', {}, {
+    
+    
+    this.OrderGroupLine = this.sequelize.define('order_group_line', {}, {
       freezeTableName: true,
       timestamps: false,
       tableName: 'order_group_line'
     });
-    this.OrderGroup.belongsToMany(this.Order, {
+    /*this.OrderGroup.belongsToMany(this.Order, {
       through: this.OrderGroupLine,
-      foreignKey: 'id_order'
+      foreignKey: 'id_order',
+      foreignKeyConstraint: true
+    });*/
+    this.OrderGroupLine.belongsTo(this.OrderGroup, {
+      foreignKey: 'id_order_group',
+      foreignKeyConstraint: true
     });
-    this.Order.belongsToMany(this.OrderGroup, {
-      through: this.OrderGroupLine,
+    this.OrderGroup.hasMany(this.OrderGroupLine, {
+      as: 'order_group_line',
       foreignKey: 'id_order_group'
     });
+    /*this.Order.belongsToMany(this.OrderGroup, {
+      through: this.OrderGroupLine,
+      foreignKey: 'id_order_group',
+      foreignKeyConstraint: true
+    });*/
+    this.OrderGroupLine.belongsTo(this.Order, {
+      foreignKey: 'id_order',
+      foreignKeyConstraint: true
+    });
+    this.Order.hasMany(this.OrderGroupLine, {
+      as: 'order_group_line',
+      foreignKey: 'id_order'
+    });
     
-    this.OrderLine = this.sequelize.define('OrderLine', {
+    
+    
+    this.OrderLine = this.sequelize.define('order_line', {
       quantity: Sequelize.INTEGER
     }, {
       freezeTableName: true,
       timestamps: false,
       tableName: 'order_line'
     });
-    this.Product.belongsToMany(this.Order, {
+    /*this.Product.belongsToMany(this.Order, {
       through: this.OrderLine,
+      foreignKey: 'id_order',
+      foreignKeyConstraint: true
+    });*/
+    this.OrderLine.belongsTo(this.Order, {
+      foreignKey: 'id_order',
+      foreignKeyConstraint: true
+    });
+    this.Order.hasMany(this.OrderLine, {
+      as: 'order_line',
       foreignKey: 'id_order'
     });
-    this.Order.belongsToMany(this.Product, {
+    /*this.Order.belongsToMany(this.Product, {
       through: this.OrderLine,
+      foreignKey: 'id_product',
+      foreignKeyConstraint: true
+    });*/
+    this.OrderLine.belongsTo(this.Product, {
+      foreignKey: 'id_product',
+      foreignKeyConstraint: true
+    });
+    this.Product.hasMany(this.OrderLine, {
+      as: 'order_line',
       foreignKey: 'id_product'
     });
+    
+    
     
     this.sequelize.sync().then(() => {
       console.log("Database created successfully !");
@@ -398,74 +428,78 @@ module.exports = new class DBManager {
             });
   }
   
+  startTransaction(process, callback, rollback) {
+    return this.sequelize.transaction(process).then(callback).catch(rollback);
+  }
+  
   user() {
-    this.User.sync();
+    //this.User.sync();
     
     return this.User;
   }
   
   role() {
-    this.Role.sync();
+    //this.Role.sync();
     
     return this.Role;
   }
   
   orderGroup() {
-    this.OrderGroup.sync();
+    //this.OrderGroup.sync();
     
     return this.OrderGroup;
   }
   
   orderGroupLine() {
-    this.OrderGroupLine.sync();
+    //this.OrderGroupLine.sync();
     
     return this.OrderGroupLine;
   }
   
   orderStatus() {
-    this.OrderStatus.sync();
+    //this.OrderStatus.sync();
     
     return this.OrderStatus;
   }
   
   order() {
-    this.Order.sync();
+    //this.Order.sync();
     
     return this.Order;
   }
   
   orderLine() {
-    this.OrderLine.sync();
+    //this.OrderLine.sync();
     
     return this.OrderLine;
   }
   
   section() {
-    this.Section.sync();
+    //this.Section.sync();
     
     return this.Section;
   }
   
   rack() {
-    this.Rack.sync();
+    //this.Rack.sync();
     
     return this.Rack;
   }
   
   product() {
-    this.Product.sync();
+    //this.Product.sync();
     
     return this.Product;
   }
   
   alertStatus() {
-    this.AlertStatus.sync();
+    //this.AlertStatus.sync();
     
     return this.AlertStatus;
   }
   
   alert() {
-    this.Alert.sync();
+    //this.Alert.sync();
     
     return this.Alert;
   }

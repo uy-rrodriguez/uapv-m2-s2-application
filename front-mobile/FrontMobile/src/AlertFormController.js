@@ -19,12 +19,16 @@ class AlertFormController extends Component {
   }
 
   handleChangeStock(text) {
-    this.setState({stock: text});
+    let stock = parseInt(text);
+    if (isNaN(stock)) {
+      stock = 0;
+    }
+    this.setState({stock: stock});
   }
 
   handleSubmit() {
     let data = {
-      product: this.state.product.id,
+      id_product: this.state.product.id,
       stock: this.state.stock
     };
 
@@ -32,9 +36,13 @@ class AlertFormController extends Component {
 
     BackREST.post("alert", data)
       .then((responseJson) => {
-        Alert.alert("Alerte de stock", "Votre alerte a bien été créée");
-
-        goBack();
+        if (responseJson.result) {
+          Alert.alert("Alerte de stock", "Votre alerte a bien été créée");
+          goBack();
+        }
+        else {
+          Alert.alert("Alerte de stock", "Il y a eu une erreur pour créer l'alerte. " + responseJson.message);
+        }
       })
       .catch((error) => {
         Alert.alert("Alerte de stock", "Il y a eu une erreur pour créer l'alerte. " + JSON.stringify(error));

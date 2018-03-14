@@ -32,7 +32,7 @@ class RackCell extends Component {
             <Text style={styles.rackCellTitle}>[{rackCell.row + "-" + rackCell.column}]</Text>
             <Text style={styles.rackCellText}>{rackCell.product.name}</Text>
             <Text style={styles.rackCellText}>{rackCell.quantity}x</Text>
-            <Text style={styles.rackCellText}>{rackCell.quantity * rackCell.product.weight} kg</Text>
+            <Text style={styles.rackCellText}>{(rackCell.quantity * rackCell.product.weight).toFixed(2)} kg</Text>
           </View>
 
         </TouchableNativeFeedback>

@@ -9,7 +9,7 @@ class AlertForm extends Component {
       <View style={styles.container}>
         <Text style={styles.h3}>Produit : {this.props.product.name}</Text>
         <TextInput name="stock" value={"" + this.props.stock} onChangeText={this.props.onChangeStock}
-                   style={styles.input} keyboardType={"numeric"} placeholder="Stock actuel" />
+                   style={styles.input} keyboardType={"numeric"} />
         <Button title="Envoyer" onPress={this.props.onSubmit} style={styles.btnSubmit} styleText={styles.btnSubmitText} />
       </View>
     );

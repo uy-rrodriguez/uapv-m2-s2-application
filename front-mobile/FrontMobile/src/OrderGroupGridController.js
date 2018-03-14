@@ -48,6 +48,40 @@ class OrderGroupGridController extends Component {
     return grid;
   }
 
+  
+  /**
+   * Gets a new order grid and then updates the section grid.
+   *
+   */
+  generateNewOrderGroup() {
+    BackREST.get("ordergroup/1").
+      then((responseJson) => {
+        if (responseJson.result) {
+          let orderGroup = responseJson.orderGroup;
+
+          // The returned object is not exactly as we expect, so we will transform it
+          orderGroup.picker = orderGroup.user;
+          orderGroup.orders = orderGroup.order_group_line;
+          orderGroup.orders.forEach((order) => {
+            order.date = order.order.date;
+            order.client = order.order.client;
+            order.orderlines = order.order.order_line;
+          });
+        
+          this.setState({orderGroup: orderGroup});
+
+          this.loadProductsAndQuantities(orderGroup);
+        }
+        else {
+          Alert.alert("Error", "generate: " + responseJson.message);
+        }
+        
+      })
+      .catch((error) => {
+        Alert.alert("Error", "generate: " + JSON.stringify(error));
+      });
+  }
+
 
   /**
    * Loads all the products in the given order group.
@@ -89,38 +123,24 @@ class OrderGroupGridController extends Component {
   loadProduct(id) {
     BackREST.get("product/" + id)
       .then((responseJson) => {
-        let product = responseJson;
-        let section = product.rack.section;
+        if (responseJson.result) {
+          let product = responseJson.product;
+          let section = product.rack.section;
 
-        // Update the grid cell with the product data
-        let gridCell = this.state.sectionGrid[section.row-1][section.column-1];
-        gridCell.productList.push(product);
-        gridCell.active = true;
+          // Update the grid cell with the product data
+          let gridCell = this.state.sectionGrid[section.row-1][section.column-1];
+          gridCell.productList.push(product);
+          gridCell.active = true;
 
-        // Update state
-        this.setState({sectionGrid: this.state.sectionGrid});
+          // Update state
+          this.setState({sectionGrid: this.state.sectionGrid});
+        }
+        else {
+          Alert.alert("Error", "loadProduct: " + responseJson.message);
+        }
       })
       .catch((error) => {
         Alert.alert("Error", "loadProduct: " + JSON.stringify(error));
-      });
-  }
-
-
-  /**
-   * Gets a new order grid and then updates the section grid.
-   *
-   */
-  generateNewOrderGroup() {
-    BackREST.get("ordergroup/1").
-      then((responseJson) => {
-        let orderGroup = responseJson;
-
-        this.setState({orderGroup: orderGroup});
-
-        this.loadProductsAndQuantities(orderGroup);
-      })
-      .catch((error) => {
-        Alert.alert("Error", "generate: " + JSON.stringify(error));
       });
   }
 

@@ -29,7 +29,6 @@
       "max_weight": 0
     }
   ],
-
   "ordergroup": [
     {
       "id": 1,
@@ -114,7 +113,6 @@
       ]
     }
   ],
-
   "product": [
     {
       "id": 1,
@@ -159,7 +157,6 @@
       }
     }
   ],
-
   "alert": [
     {
       "id": 1,
@@ -178,6 +175,21 @@
         "id": 2,
         "name": "Produit 2"
       }
+    },
+    {
+      "product": 3,
+      "stock": 10,
+      "id": 3
+    },
+    {
+      "product": 3,
+      "stock": 10,
+      "id": 4
+    },
+    {
+      "product": 3,
+      "stock": 10,
+      "id": 5
     }
   ]
 }

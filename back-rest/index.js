@@ -40,7 +40,7 @@ app.post("/login", function(req, res) {
   try {
     dbManager.user().findOne({ where: {name: req.body.user}}).then(user => {
       if (!user) {
-        res.json({result: false, message: "Unknows user !"});
+        res.json({result: false, message: "Unknown user !"});
       }
       else if (req.body.password != user.password) {
         res.json({result: false, message: "Invalid password !"});
@@ -48,7 +48,7 @@ app.post("/login", function(req, res) {
       else {
         dbManager.role().findOne({ where: {id: user.id_role}}).then(role => {
           if (!role) {
-            res.json({result: false, message: "Unable to retrieve user's access !"});
+            res.json({result: false, message: "Unable to retrieve the user role data !"});
           }
           else {
             res.json({result: true, user: {
@@ -72,19 +72,19 @@ app.post("/signin", function(req, res) {
   try {
     dbManager.role().findOne({ where: {name: req.body.role}}).then(role => {
       if (!role) {
-        res.json({result: false, message: "Unable to determine user's role !"});
+        res.json({result: false, message: "Unable to determine the role of the user !"});
       }
       else {
         dbManager.user().findOne({ where: {name: req.body.user}}).then(user => {
           if (user) {
-            res.json({result: false, message: "Username is already existing !"});
+            res.json({result: false, message: "Another user already exists with the same name !"});
           }
           else {
             result = dbManager.user().create({
               id_role: role.id, name: req.body.user, password: req.body.password, max_weight: req.body.maxWeight
             }).then(create => {
               if (!create) {
-                res.json({result: false, message: "User creation failed !"});
+                res.json({result: false, message: "The user creation has failed !"});
               }
               else {
                 res.json({result: true});
@@ -104,9 +104,25 @@ app.get('/logout', function(req, res) {
   res.json({result: false, message: "Not yet implemented."});
 });
 
+app.get('/user', function(req, res) {
+  try {
+    dbManager.user().findAll({
+      include: [dbManager.role()]
+    }).then(users => {
+      if (!users) res.json({result: false, message: "Unable to get the user list"});
+      else res.json({result: true, users: users});
+    });
+  }
+  catch (e) {
+    res.json({result: false, message: e.message});
+  }
+});
+
 app.get('/ordergroup', function(req, res) {
   generateOrders();
   let userId = 1;
+  let orderGroupId = 0;
+  
   try {
     dbManager.sequelize.transaction(function(t) {
       return dbManager.user().findOne({
@@ -122,6 +138,9 @@ app.get('/ordergroup', function(req, res) {
         }, {
           transaction: t
         }).then(orderGroup => {
+          
+          orderGroupId = orderGroup.id;
+          
           return dbManager.order().findAll({
             where: {
               id_order_status: 2
@@ -177,18 +196,77 @@ app.get('/ordergroup', function(req, res) {
           })
         });
       });
-    }).then(function(result) {
+    })
+    
+    .then(function(result) {
       console.log('\nRESULT:\n' + result + '\n');
-      res.json({result: true});
-    }).catch(function(err) {
+      
+      dbManager.orderGroup().findOne({
+        where: {
+          id: orderGroupId
+        },
+        include: [dbManager.user(), {
+          model: dbManager.orderGroupLine(),
+          as: 'order_group_line',
+          include: [{
+            model: dbManager.order(),
+            include: [dbManager.orderStatus(), {
+              model: dbManager.orderLine(),
+              as: 'order_line',
+            }]
+          }]
+        }]
+      })
+      .then((orderGroup) => {
+        res.json({result: true, orderGroup: orderGroup});
+      })
+      .catch((err) => {
+        console.log('\nERR:\n' + err.message + '\n');
+        res.json({result: false, message: 'Unable to retrieve the group of orders after creation !'});
+      });
+    })
+    
+    .catch(function(err) {
       console.log('\nERR:\n' + err.message + '\n');
-      res.json({result: false, message: 'An error occured ! Unable to complete processing !'});
+      res.json({result: false, message: 'An error occured ! Unable to complete the processing !'});
     });
   }
   catch (e) {
     res.json({result: false, message: e.message});
   }
 });
+
+app.get('/ordergroup/:id', function(req, res) {
+  try {      
+    dbManager.orderGroup().findOne({
+      where: {
+        id: req.params.id
+      },
+      include: [dbManager.user(), {
+        model: dbManager.orderGroupLine(),
+        as: 'order_group_line',
+        include: [{
+          model: dbManager.order(),
+          include: [dbManager.orderStatus(), {
+            model: dbManager.orderLine(),
+            as: 'order_line',
+          }]
+        }]
+      }]
+    })
+    .then((orderGroup) => {
+      res.json({result: true, orderGroup: orderGroup});
+    })
+    .catch((err) => {
+      console.log('\nERR:\n' + err.message + '\n');
+      res.json({result: false, message: 'Unable to retrieve the group of orders with the given ID !'});
+    });
+  }
+  catch (e) {
+    res.json({result: false, message: e.message});
+  }
+});
+
 
 app.put('/ordergroup/:id', function(req, res) {
   let sql1 = `SELECT * FROM "order_status" WHERE name = ?`;
@@ -228,12 +306,12 @@ app.put('/ordergroup/:id', function(req, res) {
               });
             }
             else {
-              res.json({result: false, message: "Unable to retrieve each order !"});
+              res.json({result: false, message: "Unable to retrieve the orders !"});
             }
           });
         }
         else {
-          res.json({result: false, message: "Unable to retrieve specified status !"});
+          res.json({result: false, message: "Unable to retrieve the specified status !"});
         }
       });
     });
@@ -275,7 +353,7 @@ app.get('/alert', function(req, res) {
       where: {id_alert_status: 2},
       include: [dbManager.product(), dbManager.alertStatus()]
     }).then(alerts => {
-      if (!alerts) res.json({result: false, message: "Unable to get alert list"});
+      if (!alerts) res.json({result: false, message: "Unable to get the alert list"});
       else res.json({result: true, alerts: alerts});
     });
   }
@@ -308,7 +386,7 @@ app.delete('/alert/:id', function(req, res) {
           });
         }
         else {
-          res.json({result: false, message: "Unable to retrieve specified alert !"});
+          res.json({result: false, message: "Unable to retrieve the specified alert !"});
         }
       });
     });
@@ -329,7 +407,10 @@ app.get('/ordergrouplist', function(req, res) {
         as: 'order_group_line',
         include: [{
           model: dbManager.order(),
-          include: [dbManager.orderStatus()]
+          include: [dbManager.orderStatus(), {
+            model: dbManager.orderLine(),
+            as: 'order_line',
+          }]
         }]
       }]
     }).then(orderGroups => {
@@ -354,7 +435,7 @@ app.get('/product/:id', function(req, res) {
           include: [dbManager.section()]
       }]
     }).then(product => {
-      if (!product) res.json({result: false, message: 'Unable to retrieve product with specified ID !'});
+      if (!product) res.json({result: false, message: 'Unable to retrieve a product with the specified ID !'});
       else res.json({result: true, product: product});
     });
   }

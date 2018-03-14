@@ -8,7 +8,7 @@ class UserList extends Component {
       <tr key={user.id}>
         <th scope="row">{user.id}</th>
         <td>{user.name}</td>
-        <td>{user.id_role}</td>
+        <td>{user.role.name}</td>
         <td>{user.max_weight}</td>
       </tr>
     );

@@ -26,6 +26,10 @@ class SignupForm extends Component {
                    onChange={this.props.onChange} className="form-control" placeholder="Password" />
           </div>
           <div className="form-group">
+            <input type="number" name="maxWeight" value={this.props.maxWeight}
+                   onChange={this.props.onChange} className="form-control" placeholder="Poids maximum (pour préparateurs)" />
+          </div>
+          <div className="form-group">
             <select name="role" value={this.props.role}
                     onChange={this.props.onChangeSelect} className="form-control">
               {roleOptions}
@@ -43,6 +47,7 @@ SignupForm.propTypes = {
   user: PropTypes.string.isRequired,
   password: PropTypes.string.isRequired,
   role: PropTypes.number.isRequired,
+  maxWeight: PropTypes.number.isRequired,
   roleList: PropTypes.object.isRequired,
   onChange: PropTypes.func.isRequired,
   onChangeSelect: PropTypes.func.isRequired,

@@ -1,8 +1,9 @@
 import React, { Component } from "react";
-import UserList from "./UserList";
-import $ from "jquery";
-import isAuthenticated from "./helpers/isAuthenticated";
 import { Redirect } from "react-router-dom";
+import UserList from "./UserList";
+//import $ from "jquery";
+import isAuthenticated from "./helpers/isAuthenticated";
+import BackREST from "./helpers/BackREST";
 
 class UserListController extends Component {
   constructor(props) {
@@ -10,25 +11,25 @@ class UserListController extends Component {
     this.state = {
       users: []
     };
-
+  }
+  
+  componentDidMount() {
     this.load();
   }
 
   load() {
-    let _this = this;
-
-    $.ajax({
-      url: "http://localhost:4000/user",
-      method: "GET",
-
-      success(data, textStatus, jqXHR) {
-        _this.setState({users: data});
-      },
-
-      error(jqXHR, textStatus, errorThrown) {
-        alert("Error: " + textStatus);
-      }
-    });
+    BackREST.get("user")
+      .then((responseJson) => {
+        if (responseJson.result) {
+          this.setState({users: responseJson.users});
+        }
+        else {
+          alert("Error: " + responseJson.message);
+        }
+      })
+      .catch((error) => {
+        alert("Error: " + error);
+      });
   }
 
   render() {

@@ -1,8 +1,9 @@
 import React, {Component} from "react";
-import OrderGroupList from "./OrderGroupList";
-import $ from "jquery";
-import isAuthenticated from "./helpers/isAuthenticated";
 import { Redirect } from "react-router-dom";
+import OrderGroupList from "./OrderGroupList";
+//import $ from "jquery";
+import isAuthenticated from "./helpers/isAuthenticated";
+import BackREST from "./helpers/BackREST";
 
 class OrderGroupListController extends Component {
   constructor(props) {
@@ -10,36 +11,42 @@ class OrderGroupListController extends Component {
     this.state = {
       orderGroups: []
     };
-
+  }
+  
+  componentDidMount() {
     this.load();
   }
 
   load() {
-    let _this = this;
+    BackREST.get("ordergrouplist")
+      .then((responseJson) => {
+        if (responseJson.result) {
+          let orderGroupList = responseJson.order_group;
 
-    $.ajax({
-      url: "http://localhost:4000/ordergroup",
-      method: "GET",
-
-      success(data, textStatus, jqXHR) {
-        let orderGroupList = data;
-
-        // Load picker profiles asynchronously
-        orderGroupList.forEach(function (orderGroup) {
-          _this.loadPicker(orderGroup);
-          orderGroup.picker = {id: 0, name: ""};
-        });
-
-        // Load products asynchronously
-        _this.loadProducts(orderGroupList);
-        
-        _this.setState({orderGroups: data});
-      },
-
-      error(jqXHR, textStatus, errorThrown) {
-        alert("Error: " + textStatus);
-      }
-    });
+          // The returned object is not exactly as we expect, so we will transform it
+          orderGroupList.forEach((orderGroup) => {
+            orderGroup.picker = orderGroup.user;
+            orderGroup.orders = orderGroup.order_group_line;
+            orderGroup.orders.forEach((order) => {
+              order.date = order.order.date;
+              order.client = order.order.client;
+              order.orderlines = order.order.order_line;
+            });
+          });
+          
+          // Load products asynchronously
+          this.loadProducts(orderGroupList);
+          
+          // Update state
+          this.setState({orderGroups: responseJson.order_group});
+        }
+        else {
+          alert("Error: " + responseJson.message);
+        }
+      })
+      .catch((error) => {
+        alert("Error: " + error);
+      });
   }
 
 
@@ -48,6 +55,7 @@ class OrderGroupListController extends Component {
    *
    * @param orderGroup
    */
+   /*
   loadPicker(orderGroup) {
     let _this = this;
 
@@ -65,6 +73,7 @@ class OrderGroupListController extends Component {
       }
     });
   }
+  */
 
 
   /**
@@ -73,7 +82,7 @@ class OrderGroupListController extends Component {
    * @param orderGroupList
    */
   loadProducts(orderGroupList) {
-    let _this = this;
+    //let _this = this;
 
     // First, we get all the product ids that will be searched and create an empty object
     // in a dictionary for each one of them.
@@ -98,23 +107,25 @@ class OrderGroupListController extends Component {
     // Then, for each product, we search its data and update the empty object previously created.
     // So after this procedure all the orders that share a product will share the object containing its data.
     for (let id in products) {
-      $.ajax({
-        url: "http://localhost:4000/product/" + id,
-        method: "GET",
-
-        success(data, textStatus, jqXHR) {
-          let productData = data;
-          let productInMemory = products[id];
-          productInMemory.id = productData.id;
-          productInMemory.name = productData.name;
-          productInMemory.weight = productData.weight;
-          _this.setState({orderGroups: _this.state.orderGroups});
-        },
-
-        error(jqXHR, textStatus, errorThrown) {
-          alert("Error: " + textStatus);
-        }
-      });
+      BackREST.get("product/" + id)
+        .then((responseJson) => {
+          
+          if (responseJson.result) {
+            let productData = responseJson.product;
+            let productInMemory = products[id];
+            productInMemory.id = productData.id;
+            productInMemory.name = productData.name;
+            productInMemory.weight = productData.weight;
+            this.setState({orderGroups: this.state.orderGroups});
+          }
+          else {
+            alert("Error: " + responseJson.message);
+          }
+          
+        })
+        .catch((error) => {
+          alert("Error: " + error);
+        });
     }
   }
 

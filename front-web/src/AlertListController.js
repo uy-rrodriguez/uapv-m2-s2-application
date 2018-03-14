@@ -1,8 +1,9 @@
 import React, {Component} from "react";
-import AlertList from "./AlertList";
-import $ from "jquery";
-import isAuthenticated from "./helpers/isAuthenticated";
 import { Redirect } from "react-router-dom";
+import AlertList from "./AlertList";
+//import $ from "jquery";
+import isAuthenticated from "./helpers/isAuthenticated";
+import BackREST from "./helpers/BackREST";
 
 class AlertListController extends Component {
   constructor(props) {
@@ -14,36 +15,36 @@ class AlertListController extends Component {
 
     this.handleStockChange = this.handleStockChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-
+  }
+  
+  componentDidMount() {
     this.load();
   }
 
   load() {
-    let _this = this;
+    BackREST.get("alert")
+      .then((responseJson) => {
+        if (responseJson.result) {
+          let alertsDict = {};
+          let alerts = responseJson.alerts;
+          alerts.forEach(function (item) {
+            alertsDict[item.id] = item;
+            item.newStock = item.stock;
+          });
 
-    $.ajax({
-      url: "http://localhost:4000/alert",
-      method: "GET",
-
-      success(data, textStatus, jqXHR) {
-        let alertsDict = {};
-        data.forEach(function (item) {
-          alertsDict[item.id] = item;
-          item.newStock = item.stock;
-        });
-
-        _this.setState({alerts: data});
-        _this.setState({alertsDict: alertsDict});
-      },
-
-      error(jqXHR, textStatus, errorThrown) {
-        alert("Error: " + textStatus);
-      }
-    });
+          this.setState({alerts: alerts});
+          this.setState({alertsDict: alertsDict});
+        }
+        else {
+          alert("Error: " + responseJson.message);
+        }
+      })
+      .catch((error) => {
+        alert("Error: " + error);
+      });
   }
 
   handleStockChange(alertId, event) {
-    //this.setState({[event.target.name]: event.target.value});
     let _alert = this.state.alertsDict[alertId];
     _alert.newStock = event.target.value;
 
@@ -51,31 +52,28 @@ class AlertListController extends Component {
       alerts: this.state.alerts,
       alertsDict: this.state.alertsDict
     });
-
-    //this.state.alertsDict[alertId].stock = event.target.value;
-    alert("UPDATE alert " + alertId + ", new stock = " + event.target.value);
   }
 
   handleSubmit(alertId, event) {
     event.preventDefault();
 
-    alert("SUBMIT alert " + alertId + ", new stock = " + this.state.alertsDict[alertId].newStock);
-
-    /*
-    $.ajax({
-      url: "http://localhost:4000/login",
-      method: "POST",
-      data: this.state,
-
-      success(data, textStatus, jqXHR) {
-        alert(JSON.stringify(data));
-      },
-
-      error(jqXHR, textStatus, errorThrown) {
-        alert("Error: " + textStatus);
-      }
-    });
-    */
+    let data = {
+      stock: this.state.alertsDict[alertId].newStock
+    };
+    
+    BackREST.del("alert/" + alertId, data)
+      .then((responseJson) => {
+        if (responseJson.result) {
+          alert("L'alerte de produit a bien été corrigée");
+          this.load();
+        }
+        else {
+          alert("Error: " + responseJson.message);
+        }
+      })
+      .catch((error) => {
+        alert("Error: " + error);
+      });
   }
 
   render() {

@@ -19,8 +19,8 @@ class OrderGroupList extends Component {
 
         return (
           <div key={orderGroup.id + "-" + order.id}>
-            <h3>Ordre {order.id}</h3>
-            <h4>{order.date} | {order.client}</h4>
+            <h4>Ordre {order.id}</h4>
+            <span>{order.date} | Client : {order.client}</span>
 
             <table className="table">
               <thead>

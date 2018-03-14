@@ -19,7 +19,7 @@ class AppController extends Component {
         {name: "Sign up",           path: "/signup"},
         {name: "Alerts",            path: "/alert"},
         {name: "Users",             path: "/user"},
-        {name: "New order group",   path: "/ordergroup"},
+        /*{name: "New order group",   path: "/ordergroup"},*/
         {name: "List order groups", path: "/ordergrouplist"}
       ];
     }

@@ -101,7 +101,8 @@ var alertStatusData = `REPLACE INTO "alert_status"(id, name) VALUES (
 var orderStatusData = `REPLACE INTO "order_status"(id, name) VALUES (
   1, "Complet"), (
   2, "Incomplet"), (
-  3, "En traitement")`;
+  3, "En traitement"), (
+  4, "Bloqué")`;
 
 var roleData = `REPLACE INTO "role"(id, name) VALUES (
   1, "Administrateur"), (
@@ -276,12 +277,12 @@ var rackData = `REPLACE INTO "rack"(id, id_section, row, column) VALUES (
   144, 16, 3, 3)`;
 
 var productData = `REPLACE INTO "product"(id, id_rack, name, stock, weight) VALUES (
-  1, 1, "test1", 10, 25.5), (
-  2, 2, "test2", 40, 42.1), (
-  3, 4, "test3", 78, 7.12), (
-  4, 11, "test4", 23, 12.1), (
-  5, 9, "test5", 8, 3.62), (
-  6, 9, "test6", 82, 1.03)`;
+  1, 1, "test1", 100, 25.5), (
+  2, 2, "test2", 400, 42.1), (
+  3, 4, "test3", 780, 7.12), (
+  4, 11, "test4", 230, 12.1), (
+  5, 9, "test5", 80, 3.62), (
+  6, 9, "test6", 820, 1.03)`;
 
 var alertData = `REPLACE INTO "alert"(id, id_product, id_alert_status, stock) VALUES (
   1, 1, 2, 10), (

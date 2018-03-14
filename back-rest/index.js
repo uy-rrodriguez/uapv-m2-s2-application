@@ -136,9 +136,9 @@ app.get('/ordergroup', function(req, res) {
             let data = [];
             let total_weight = 0;
             let ids = [];
-            for (var i = 0; i < orders.length; i++) {
+            for (let i = 0; i < orders.length; i++) {
               let lines_weight = 0;
-              for (var j = 0; j < orders[i].order_line.length; j++) {
+              for (let j = 0; j < orders[i].order_line.length; j++) {
                 lines_weight += orders[i].order_line[j].product.weight;
               }
               if ((total_weight + lines_weight) < user.max_weight) {
@@ -209,7 +209,7 @@ app.put('/ordergroup/:id', function(req, res) {
             if (err) res.json({result: false, message: err.message});
             if (rows) {
               sql3 += ` WHERE id IN (`;
-              for (var i = 0; i < rows.length; i++) {
+              for (let i = 0; i < rows.length; i++) {
                 if (i > 0) {
                   sql3 += `, `;
                 }
@@ -358,6 +358,115 @@ app.get('/setup', function(req, res) {
 app.get('/test', function(req, res) {
   dbManager.test();
   res.json({result: true});
+});
+
+app.get('/generate', function(req, res) {
+  let nbOrders = 10;
+  let maxNbLines = 4;
+  let maxQuantity = 10;
+  let maxProductId = 6;
+  let executed = 0;
+  try {
+    for (let i = 0; i < nbOrders; i++) {
+      dbManager.sequelize.transaction(function(t) {
+        return dbManager.product().findAll({}, {
+          transaction: t
+        }).then(products => {
+          let date = new Date();
+          let month = date.getMonth() + 1;
+          if (month < 10) month = '0' + month;
+          let day = date.getDate();
+          if (day < 10) day = '0' + day;
+          return dbManager.order().create({
+            client: 'generatedTest',
+            date: date.getFullYear()
+                    + '-' + month
+                    + '-' + day
+                    + ' ' + date.getHours()
+                    + ':' + date.getMinutes()
+                    + ':' + date.getSeconds(),
+            id_order_status: 2
+          }, {
+            transaction: t
+          }).then(order => {
+            let nbLines = Math.floor(Math.random() * (maxNbLines - 1 + 1)) + 1;
+            let data = [];
+            /*
+            let ids = [];
+            let stock = [];
+            let alert = false;
+            */
+            for (let j = 0; j < nbLines; j++) {
+              let quantity = Math.floor(Math.random() * (maxQuantity - 1 + 1)) + 1;
+              let productId = Math.floor(Math.random() * (maxProductId - 1 + 1)) + 1;
+              for (let k = 0; k < products.length; k++) {
+                if (productId == products[k].id) {
+                  if (products[k].stock == 0) {
+                    throw new Error('Product stock for id (' + productId+ ') is empty !');
+                  }
+                  else if (quantity > products[k].stock) {
+                    quantity = products[k].stock;
+                    /*
+                    ids.push(products[k].id);
+                    stock.push({
+                      stock: 0
+                    });
+                    alert = true;
+                    */
+                  }
+                  else if ((products[k].stock - quantity) <= 10) {
+                    /*
+                    ids.push(products[k].id);
+                    stock.push({
+                      stock: products[k].stock - quantity
+                    });
+                    alert = true;
+                    */
+                  }
+                  else {
+                    /*
+                    ids.push(products[k].id);
+                    stock.push({
+                      stock: products[k].stock - quantity
+                    });
+                    */
+                  }
+                }
+              }
+              data.push({
+                quantity: quantity,
+                id_order: order.id,
+                id_product: productId
+              });
+            }
+            return dbManager.orderLine().bulkCreate(data, {
+              transaction: t
+            });
+          });
+        });
+      }).then(function(result) {
+        executed++;
+        console.log('\nRESULT:\n' + result);
+        if (nbOrders == (i + 1)) res.json({
+          result: true,
+          message: executed + ' order(s) generated !'
+        });
+      }).catch(function(err) {
+        console.log('\nERR:\n' + err.message);
+        if (nbOrders == (i + 1)) {
+          if (executed > 0) {
+            res.json({result: true, message: executed + ' order(s) generated !'});
+          }
+          else {
+            res.json({result: false, message: 'Any order can be generated'});
+          }
+        }
+      });
+    }
+  }
+  catch (e) {
+    res.json({result: false, message: e.message});
+  }
 });
 
 try {

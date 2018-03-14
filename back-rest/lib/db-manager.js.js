@@ -428,10 +428,6 @@ module.exports = new class DBManager {
             });
   }
   
-  startTransaction(process, callback, rollback) {
-    return this.sequelize.transaction(process).then(callback).catch(rollback);
-  }
-  
   user() {
     //this.User.sync();
     

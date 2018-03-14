@@ -5,8 +5,8 @@
 let express = require("express");
 let cors = require("cors");
 let bodyParser = require("body-parser");
-let db = require("./lib/db");
-let auth = require("./lib/auth.js");
+let db = require("./lib/db.js");
+let dbManager = require("./lib/db-manager.js");
 
 let app = express();
 
@@ -25,130 +25,39 @@ app.use(bodyParser.urlencoded({extended: false}));
  * ******************************************************************************************* */
 
 app.get("/index", function(req, res) {
-  res.json({result: "It's alive!"});
-});
-
-app.post("/login", function(req, res, next) {
-  //console.log(req.body);
-
   /*
   if(!req.body.notes || typeof req.body.notes != "string") {
     res.status(400).send("400 Bad Request")
   }
-
   req.user.customData.notes = req.body.notes
   req.user.customData.save()
   res.status(200).end()
   */
-
-  let sql = `SELECT id, name
-            FROM "user"
-            WHERE name = ? AND password = ?`;
-
-  // Get first row only
-  try {
-    let dbconn = db.connect();
-    dbconn.get(sql, [req.body.user, req.body.password], (err, row) => {
-      try {
-        if (err) {
-          throw err;
-        }
-
-        if (row) {
-          res.json({result: true, id: row.id, name: row.name});
-        }
-        else {
-          throw "No user found with the given credentials";
-        }
-      }
-      catch (e) {
-        res.json({result: false, error: e.message});
-      }
-    });
-  }
-  catch(e) {
-    res.json({result: false, error: e.message});
-  }
+  res.json({result: "It's alive!"});
 });
 
-app.post("/signin", function(req, res) {
-  //console.log(req.body);
-
-  let sql ="INSERT INTO user (name, password) VALUES (?, ?)";
-
+app.post("/login", function(req, res) {
   try {
-    let dbconn = db.connect();
-    dbconn.run(sql, [req.body.user, req.body.password], (err) => {
-      try {
-        if (err) {
-          throw err;
-        }
-
-        res.json({result: true, message: "The user has been successfully created"});
+    dbManager.user().findOne({ where: {name: req.body.user}}).then(user => {
+      if (!user) {
+        res.json({result: false, message: "Unknows user !"});
       }
-      catch (e) {
-        res.json({result: false, error: e.message});
-      }
-    });
-  }
-  catch(e) {
-    res.json({result: false, error: e.message});
-  }
-});
-
-app.get('/logout', function(req, res) {
-  res.json({result: false, message: "Not yet implemented."});
-});
-
-app.get('/ordergroup', function(req, res) {
-  let sql1 = `INSERT INTO "order_group"(id_user, total_weight) VALUES (?, ?)`;
-  let sql2 = `SELECT * FROM "order_group" ORDER BY id DESC`;
-  let sql3 = `SELECT "order".*
-              FROM "order"
-              INNER JOIN "order_status" ON "order".id_order_status = "order_status".id
-              WHERE "order_status".id = ?`;
-  let sql4 = `INSERT INTO "order_group_line"(id_order_group, id_order)`;
-  let sql5 = `UPDATE "order_group" SET total_weight = ? WHERE id = ?`;
-  let conn;
-  let params = [];
-  let id;
-  let total_weight = 0;
-  try {
-    conn = db.connect();
-    conn.run(sql1, [1, 0], function(err) {
-      if (err) {
-        res.json({result: false, message: err.message});
+      else if (req.body.password != user.password) {
+        res.json({result: false, message: "Invalid password !"});
       }
       else {
-        conn.get(sql2, function(err, row) {
-          if (err) res.json({result: false, message: err.message});
-          if (row) {
-            id = row.id;
-            conn.all(sql3, [2], function(err, rows) {
-              if (err) res.json({result: false, message: err.message});
-              if (rows) {
-                sql4 += ` VALUES `;
-                for (var i = 0; i < rows.length; i++) {
-                  if (i > 0) {
-                    sql4 += `, `;
-                  }
-                  sql4 += `(?, ?)`;
-                  params.push(id);
-                  params.push(rows[i].id);
-                }
-                conn.run(sql4, params, function(err) {
-                  if (err) {
-                    res.json({result: false, message: err.message});
-                  }
-                  else {
-                    res.json({result: true});
-                  }
-                });
-              }
-            });
+        dbManager.role().findOne({ where: {id: user.id_role}}).then(role => {
+          if (!role) {
+            res.json({result: false, message: "Unable to retrieve user's access !"});
           }
           else {
-            res.json({result: false, message: "Unable to create order group !"});
+            res.json({result: true, user: {
+                id: user.id,
+                id_role: role.name,
+                name: user.name,
+                password: user.password,
+                max_weight: user.max_weight
+            }});
           }
         });
       }
@@ -157,8 +66,127 @@ app.get('/ordergroup', function(req, res) {
   catch (e) {
     res.json({result: false, message: e.message});
   }
-  finally {
-    db.close();
+});
+
+app.post("/signin", function(req, res) {
+  try {
+    dbManager.role().findOne({ where: {name: req.body.role}}).then(role => {
+      if (!role) {
+        res.json({result: false, message: "Unable to determine user's role !"});
+      }
+      else {
+        dbManager.user().findOne({ where: {name: req.body.user}}).then(user => {
+          if (user) {
+            res.json({result: false, message: "Username is already existing !"});
+          }
+          else {
+            result = dbManager.user().create({
+              id_role: role.id, name: req.body.user, password: req.body.password, max_weight: req.body.maxWeight
+            }).then(create => {
+              if (!create) {
+                res.json({result: false, message: "User creation failed !"});
+              }
+              else {
+                res.json({result: true});
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+  catch (e) {
+    res.json({result: false, message: e.message});
+  }
+});
+
+app.get('/logout', function(req, res) {
+  res.json({result: false, message: "Not yet implemented."});
+});
+
+app.get('/ordergroup', function(req, res) {
+  generateOrders();
+  let userId = 1;
+  try {
+    dbManager.sequelize.transaction(function(t) {
+      return dbManager.user().findOne({
+        where: {
+          id: userId
+        }
+      }, {
+        transaction: t
+      }).then(user => {
+        return dbManager.orderGroup().create({
+          id_user: user.id,
+          total_weight: 0
+        }, {
+          transaction: t
+        }).then(orderGroup => {
+          return dbManager.order().findAll({
+            where: {
+              id_order_status: 2
+            },
+            include: [{
+              model: dbManager.orderLine(),
+              as: 'order_line',
+              include: [{
+                model: dbManager.product()
+              }]
+            }]
+          }).then(orders => {
+            let data = [];
+            let total_weight = 0;
+            let ids = [];
+            for (let i = 0; i < orders.length; i++) {
+              let lines_weight = 0;
+              for (let j = 0; j < orders[i].order_line.length; j++) {
+                lines_weight += orders[i].order_line[j].product.weight;
+              }
+              if ((total_weight + lines_weight) < user.max_weight) {
+                data.push({
+                  id_order_group: orderGroup.id,
+                  id_order: orders[i].id
+                });
+                total_weight += lines_weight;
+                ids.push(orders[i].id);
+              }
+            }
+            return dbManager.orderGroupLine().bulkCreate(data, {
+              transaction: t
+            }).then(() => {
+              return dbManager.orderGroup().update({
+                total_weight: total_weight
+              }, {
+                where: {
+                  id: orderGroup.id
+                },
+                transaction: t
+              }).then(() => {
+                return dbManager.order().update({
+                  id_order_status: 3
+                }, {
+                  where: {
+                    id: {
+                      [dbManager.Op.in]: ids
+                    }
+                  },
+                  transaction: t
+                });
+              });
+            });
+          })
+        });
+      });
+    }).then(function(result) {
+      console.log('\nRESULT:\n' + result + '\n');
+      res.json({result: true});
+    }).catch(function(err) {
+      console.log('\nERR:\n' + err.message + '\n');
+      res.json({result: false, message: 'An error occured ! Unable to complete processing !'});
+    });
+  }
+  catch (e) {
+    res.json({result: false, message: e.message});
   }
 });
 
@@ -182,7 +210,7 @@ app.put('/ordergroup/:id', function(req, res) {
             if (err) res.json({result: false, message: err.message});
             if (rows) {
               sql3 += ` WHERE id IN (`;
-              for (var i = 0; i < rows.length; i++) {
+              for (let i = 0; i < rows.length; i++) {
                 if (i > 0) {
                   sql3 += `, `;
                 }
@@ -242,25 +270,17 @@ app.post('/alert', function(req, res) {
 });
 
 app.get('/alert', function(req, res) {
-  let sql1 = `SELECT * FROM "alert"`;
-  let conn;
   try {
-    conn = db.connect();
-    conn.all(sql1, function(err, rows) {
-      if (err) res.json({result: false, message: err.message});
-      if (rows) {
-        res.json({result: true, alerts: rows});
-      }
-      else {
-        res.json({result: false, message: "Unable to get alert list !"});
-      }
+    dbManager.alert().findAll({
+      where: {id_alert_status: 2},
+      include: [dbManager.product(), dbManager.alertStatus()]
+    }).then(alerts => {
+      if (!alerts) res.json({result: false, message: "Unable to get alert list"});
+      else res.json({result: true, alerts: alerts});
     });
   }
   catch (e) {
     res.json({result: false, message: e.message});
-  }
-  finally {
-    db.close();
   }
 });
 
@@ -302,37 +322,50 @@ app.delete('/alert/:id', function(req, res) {
 });
 
 app.get('/ordergrouplist', function(req, res) {
-  let sql = `SELECT "order_group".*, "order_group_line".*, "order".*
-            FROM "order_group"
-            INNER JOIN "order_group_line" ON "order_group".id = "order_group_line".id_order_group
-            INNER JOIN "order" ON "order_group_line".id_order = "order".id
-            ORDER BY "order".date DESC`;
-  let conn;
   try {
-    conn = db.connect();
-    conn.all(sql, [], function(err, rows) {
-      if (err) res.json({result: false, message: err.message});
-      if (rows) {
-        res.json({result: true, orders: rows});
-      }
-      else {
-        res.json({result: false, message: "Unable to retrieve all order group !"});
-      }
+    dbManager.orderGroup().findAll({
+      include: [dbManager.user(), {
+        model: dbManager.orderGroupLine(),
+        as: 'order_group_line',
+        include: [{
+          model: dbManager.order(),
+          include: [dbManager.orderStatus()]
+        }]
+      }]
+    }).then(orderGroups => {
+      if (!orderGroups) res.json({result: false});
+      else res.json({result: true, order_group: orderGroups});
     });
   }
   catch (e) {
     res.json({result: false, message: e.message});
   }
-  finally {
-    db.close();
+});
+
+app.get('/product/:id', function(req, res) {
+  let productId = req.params.id;
+  try {
+    dbManager.product().findOne({
+      where: {
+        id: productId
+      },
+      include: [{
+          model: dbManager.rack(),
+          include: [dbManager.section()]
+      }]
+    }).then(product => {
+      if (!product) res.json({result: false, message: 'Unable to retrieve product with specified ID !'});
+      else res.json({result: true, product: product});
+    });
+  }
+  catch (e) {
+    res.json({result: false, message: e.message});
   }
 });
 
 app.get('/setup', function(req, res) {
   try {
     db.connect();
-    //db.dropTables();
-    //db.createTables();
     db.insertData();
     res.json({result: true});
   }
@@ -345,25 +378,145 @@ app.get('/setup', function(req, res) {
 });
 
 app.get('/test', function(req, res) {
-  //res.json({result: false, message: "Not yet implemented !"});
-  res.json({user: auth.test()});
+  dbManager.test();
+  res.json({result: true});
 });
 
+app.get('/generate', function(req, res) {
+  generateOrders();
+  res.json({result: true});
+});
+
+function generateOrders() {
+  let nbOrders = 10;
+  let maxNbLines = 4;
+  let maxQuantity = 10;
+  let maxProductId = 6;
+  /*
+  let executed = 0;
+  */
+  try {
+    for (let i = 0; i < nbOrders; i++) {
+      dbManager.sequelize.transaction(function(t) {
+        return dbManager.product().findAll({}, {
+          transaction: t
+        }).then(products => {
+          let date = new Date();
+          let month = date.getMonth() + 1;
+          if (month < 10) month = '0' + month;
+          let day = date.getDate();
+          if (day < 10) day = '0' + day;
+          return dbManager.order().create({
+            client: 'generatedTest',
+            date: date.getFullYear()
+                    + '-' + month
+                    + '-' + day
+                    + ' ' + date.getHours()
+                    + ':' + date.getMinutes()
+                    + ':' + date.getSeconds(),
+            id_order_status: 2
+          }, {
+            transaction: t
+          }).then(order => {
+            let nbLines = Math.floor(Math.random() * (maxNbLines - 1 + 1)) + 1;
+            let data = [];
+            /*
+            let ids = [];
+            let stock = [];
+            let alert = false;
+            */
+            for (let j = 0; j < nbLines; j++) {
+              let quantity = Math.floor(Math.random() * (maxQuantity - 1 + 1)) + 1;
+              let productId = Math.floor(Math.random() * (maxProductId - 1 + 1)) + 1;
+              /*
+              for (let k = 0; k < products.length; k++) {
+                if (productId == products[k].id) {
+                  if (products[k].stock == 0) {
+                    throw new Error('Product stock for id (' + productId+ ') is empty !');
+                  }
+                  else if (quantity > products[k].stock) {
+                    quantity = products[k].stock;
+                    //
+                    ids.push(products[k].id);
+                    stock.push({
+                      stock: 0
+                    });
+                    alert = true;
+                    //
+                  }
+                  else if ((products[k].stock - quantity) <= 10) {
+                    //
+                    ids.push(products[k].id);
+                    stock.push({
+                      stock: products[k].stock - quantity
+                    });
+                    alert = true;
+                    //
+                  }
+                  else {
+                    //
+                    ids.push(products[k].id);
+                    stock.push({
+                      stock: products[k].stock - quantity
+                    });
+                    //
+                  }
+                }
+              }
+              */
+              data.push({
+                quantity: quantity,
+                id_order: order.id,
+                id_product: productId
+              });
+            }
+            return dbManager.orderLine().bulkCreate(data, {
+              transaction: t
+            });
+          });
+        });
+      }).then(function(result) {
+        console.log('\nRESULT:\n' + result);
+        /*
+        executed++;
+        if (nbOrders == (i + 1)) res.json({
+          result: true,
+          message: executed + ' order(s) generated !'
+        });
+        */
+      }).catch(function(err) {
+        console.log('\nERR:\n' + err.message);
+        /*
+        if (nbOrders == (i + 1)) {
+          if (executed > 0) {
+            res.json({result: true, message: executed + ' order(s) generated !'});
+          }
+          else {
+            res.json({result: false, message: 'Any order can be generated'});
+          }
+        }
+        */
+      });
+    }
+  }
+  catch (e) {
+    console.log('\nE:\n' + e.message);
+    /*
+    res.json({result: false, message: e.message});
+    */
+  }
+}
+
 try {
-  // SI CES FONCTIONS NE SONT PAS APPELEES, LES METHODES DE L'API PLANTENT
-  // TROUVER UNE SOLUTION POUR LES SUPPRIMER
+  dbManager.authenticate();
   db.connect();
-  //db.dropTables();
-  db.createTables();
-  //db.insertData();
-  db.close();
-  auth.authenticate();
 }
 catch (e) {
   console.log(e.message);
 }
-
-
+finally {
+  db.close();
+}
 
 /* ******************************************************************************************* *
     Server initialization

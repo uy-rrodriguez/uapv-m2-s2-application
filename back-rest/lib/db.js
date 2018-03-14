@@ -100,7 +100,9 @@ var alertStatusData = `REPLACE INTO "alert_status"(id, name) VALUES (
 
 var orderStatusData = `REPLACE INTO "order_status"(id, name) VALUES (
   1, "Complet"), (
-  2, "Incomplet")`;
+  2, "Incomplet"), (
+  3, "En traitement"), (
+  4, "Bloqué")`;
 
 var roleData = `REPLACE INTO "role"(id, name) VALUES (
   1, "Administrateur"), (
@@ -108,7 +110,7 @@ var roleData = `REPLACE INTO "role"(id, name) VALUES (
   3, "Préparateur de commande")`;
 
 var userData = `REPLACE INTO "user"(id, id_role, name, password, max_weight) VALUES (
-  1, 1, "test", "test", 45.5)`;
+  1, 1, "test1", "test1", 45.5)`;
 
 var sectionData = `REPLACE INTO "section"(id, row, column) VALUES (
   1, 1, 1), (
@@ -275,24 +277,46 @@ var rackData = `REPLACE INTO "rack"(id, id_section, row, column) VALUES (
   144, 16, 3, 3)`;
 
 var productData = `REPLACE INTO "product"(id, id_rack, name, stock, weight) VALUES (
-  1, 1, "test1", 10, 25.5)`;
+  1, 1, "test1", 100, 25.5), (
+  2, 2, "test2", 400, 42.1), (
+  3, 4, "test3", 780, 7.12), (
+  4, 11, "test4", 230, 12.1), (
+  5, 9, "test5", 80, 3.62), (
+  6, 9, "test6", 820, 1.03)`;
 
 var alertData = `REPLACE INTO "alert"(id, id_product, id_alert_status, stock) VALUES (
-  1, 1, 1, 25.5), (
-  2, 1, 1, 50)`;
+  1, 1, 2, 10), (
+  2, 5, 2, 8)`;
 
 var orderGroupData = `REPLACE INTO "order_group"(id, id_user, total_weight) VALUES (
-  1, 1, 84.7)`;
+  1, 1, 49.7)`;
 
 var orderGroupLineData = `REPLACE INTO "order_group_line"(id_order_group, id_order) VALUES (
   1, 1), (
   1, 2)`;
 
 var orderData = `REPLACE INTO "order"(id, id_order_status, client, date) VALUES (
-  1, 1, "test", "2018-03-08 14:00:00"), (
-  2, 1, "test", "2018-03-08 15:00:00"), (
-  3, 2, "test", "2018-03-10 17:00:00"), (
-  4, 2, "test", "2018-03-10 17:30:00")`;
+  1, 1, "test1", "2018-03-08 14:00:00"), (
+  2, 1, "test2", "2018-03-08 15:00:00"), (
+  3, 2, "test3", "2018-03-10 17:00:00"), (
+  4, 2, "test4", "2018-03-10 17:30:00"), (
+  5, 2, "test5", "2018-03-14 14:30:00"), (
+  6, 2, "test6", "2018-03-14 15:00:00")`;
+
+var orderLineData = `REPLACE INTO "order_line"(id_product, id_order, quantity) VALUES (
+  1, 1, 1), (
+  4, 1, 2), (
+  3, 2, 11), (
+  2, 2, 7), (
+  5, 2, 2), (
+  6, 3, 28), (
+  1, 4, 2), (
+  2, 4, 3), (
+  3, 4, 8), (
+  4, 4, 1), (
+  5, 5, 1), (
+  6, 5, 9), (
+  6, 6, 2)`;
 
 module.exports = new class DB {
   constructor() {
@@ -360,6 +384,7 @@ module.exports = new class DB {
     this.connection.run(productData);
     this.connection.run(alertData);
     this.connection.run(orderData);
+    this.connection.run(orderLineData);
     this.connection.run(orderGroupData);
     this.connection.run(orderGroupLineData);
   }

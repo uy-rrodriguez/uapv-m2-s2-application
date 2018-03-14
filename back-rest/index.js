@@ -5,7 +5,7 @@
 let express = require("express");
 let cors = require("cors");
 let bodyParser = require("body-parser");
-let db = require("./lib/db");
+let db = require("./lib/db.js");
 let dbManager = require("./lib/db-manager.js");
 
 let app = express();
@@ -362,9 +362,13 @@ app.get('/test', function(req, res) {
 
 try {
   dbManager.authenticate();
+  db.connect();
 }
 catch (e) {
   console.log(e.message);
+}
+finally {
+  db.close();
 }
 
 /* ******************************************************************************************* *

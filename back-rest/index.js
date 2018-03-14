@@ -108,61 +108,73 @@ app.get('/ordergroup', function(req, res) {
   let userId = 1;
   try {
     dbManager.sequelize.transaction(function(t) {
-      return dbManager.orderGroup().create({
-        id_user: userId,
-        total_weight: 0
+      return dbManager.user().findOne({
+        where: {
+          id: userId
+        }
       }, {
         transaction: t
-      }).then(orderGroup => {
-        return dbManager.order().findAll({
-          where: {
-            id_order_status: 2
-          },
-          include: [{
-            model: dbManager.orderLine(),
-            as: 'order_line',
+      }).then(user => {
+        return dbManager.orderGroup().create({
+          id_user: user.id,
+          total_weight: 0
+        }, {
+          transaction: t
+        }).then(orderGroup => {
+          return dbManager.order().findAll({
+            where: {
+              id_order_status: 2
+            },
             include: [{
-              model: dbManager.product()
+              model: dbManager.orderLine(),
+              as: 'order_line',
+              include: [{
+                model: dbManager.product()
+              }]
             }]
-          }]
-        }).then(orders => {
-          let data = [];
-          let total_weight = 0;
-          let ids = [];
-          for (var i = 0; i < orders.length; i++) {
-            data.push({
-              id_order_group: orderGroup.id,
-              id_order: orders[i].id
-            });
-            for (var j = 0; j < orders[i].order_line.length; j++) {
-              total_weight += orders[i].order_line[j].product.weight;
+          }).then(orders => {
+            let data = [];
+            let total_weight = 0;
+            let ids = [];
+            for (var i = 0; i < orders.length; i++) {
+              let lines_weight = 0;
+              for (var j = 0; j < orders[i].order_line.length; j++) {
+                lines_weight += orders[i].order_line[j].product.weight;
+              }
+              if ((total_weight + lines_weight) < user.max_weight) {
+                data.push({
+                  id_order_group: orderGroup.id,
+                  id_order: orders[i].id
+                });
+                total_weight += lines_weight;
+                ids.push(orders[i].id);
+              }
             }
-            ids.push(orders[i].id);
-          }
-          return dbManager.orderGroupLine().bulkCreate(data, {
-            transaction: t
-          }).then(() => {
-            return dbManager.orderGroup().update({
-              total_weight: total_weight
-            }, {
-              where: {
-                id: orderGroup.id
-              },
+            return dbManager.orderGroupLine().bulkCreate(data, {
               transaction: t
             }).then(() => {
-              return dbManager.order().update({
-                id_order_status: 3
+              return dbManager.orderGroup().update({
+                total_weight: total_weight
               }, {
                 where: {
-                  id: {
-                    [dbManager.Op.in]: ids
-                  }
+                  id: orderGroup.id
                 },
                 transaction: t
+              }).then(() => {
+                return dbManager.order().update({
+                  id_order_status: 3
+                }, {
+                  where: {
+                    id: {
+                      [dbManager.Op.in]: ids
+                    }
+                  },
+                  transaction: t
+                });
               });
             });
-          });
-        })
+          })
+        });
       });
     }).then(function(result) {
       console.log('\nRESULT:\n' + result + '\n');
@@ -175,67 +187,6 @@ app.get('/ordergroup', function(req, res) {
   catch (e) {
     res.json({result: false, message: e.message});
   }
-  /*
-  let sql1 = `INSERT INTO "order_group"(id_user, total_weight) VALUES (?, ?)`;
-  let sql2 = `SELECT * FROM "order_group" ORDER BY id DESC`;
-  let sql3 = `SELECT "order".*
-              FROM "order"
-              INNER JOIN "order_status" ON "order".id_order_status = "order_status".id
-              WHERE "order_status".id = ?`;
-  let sql4 = `INSERT INTO "order_group_line"(id_order_group, id_order)`;
-  let sql5 = `UPDATE "order_group" SET total_weight = ? WHERE id = ?`;
-  let conn;
-  let params = [];
-  let id;
-  let total_weight = 0;
-  try {
-    conn = db.connect();
-    conn.run(sql1, [1, 0], function(err) {
-      if (err) {
-        res.json({result: false, message: err.message});
-      }
-      else {
-        conn.get(sql2, function(err, row) {
-          if (err) res.json({result: false, message: err.message});
-          if (row) {
-            id = row.id;
-            conn.all(sql3, [2], function(err, rows) {
-              if (err) res.json({result: false, message: err.message});
-              if (rows) {
-                sql4 += ` VALUES `;
-                for (var i = 0; i < rows.length; i++) {
-                  if (i > 0) {
-                    sql4 += `, `;
-                  }
-                  sql4 += `(?, ?)`;
-                  params.push(id);
-                  params.push(rows[i].id);
-                }
-                conn.run(sql4, params, function(err) {
-                  if (err) {
-                    res.json({result: false, message: err.message});
-                  }
-                  else {
-                    res.json({result: true});
-                  }
-                });
-              }
-            });
-          }
-          else {
-            res.json({result: false, message: "Unable to create order group !"});
-          }
-        });
-      }
-    });
-  }
-  catch (e) {
-    res.json({result: false, message: e.message});
-  }
-  finally {
-    db.close();
-  }
-  */
 });
 
 app.put('/ordergroup/:id', function(req, res) {
@@ -410,11 +361,6 @@ app.get('/test', function(req, res) {
 });
 
 try {
-  /*
-  db.connect();
-  db.createTables();
-  db.close();
-  */
   dbManager.authenticate();
 }
 catch (e) {

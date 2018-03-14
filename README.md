@@ -71,6 +71,9 @@ Install PropTypes, a library that lets us define the types and mandatory options
 ```npm install --save react-router-dom```
 Install React-Routes, a library to manage routing between different views. With it we can create links to other views which will automatically change the application's state.
 
+```npm install --save fbemitter```
+A simple implementation of Events used mainly to indicate the login and logout events.
+
 
 # Node.js + Express : Creating and building the REST API #
 
@@ -137,7 +140,25 @@ As stated after creating the application :
 ```cd front-mobile; npm start```
 The command will start a local development server on port 3000 and show a QR code. This code must be scanned with a mobile device connected to the same network as the development machine. We downloaded the Android application Expo to scan the code and connect the smartphone to the development server. Changes to the files will be instantly updated on the mobile phone.
 
+
+After some testing using the Expo app, we want to prepare our environment to build directly the Android native application. By doing that, we can build APK files and we won't ever depend on having the smartphone connected to the same wireless connecting than the development machine. We need to install some libraries and then create a new project.
+
+We aldo need to install Android SDK, configure it and add the variable ANDROID_HOME pointing to the SDK root directory. https://facebook.github.io/react-native/docs/getting-started.html
+
+```npm install -g react-native-cli```
+Install the client scripts to manage our React Native project.
+
+```npm install -g yarn```
+Installing Yarn is recommended by React Native to accelerate the next step.
+
+```cd front-mobile; react-native init FrontMobile```
+Install the necessary libraries and initialize a react-native project in the current folder. This will create two folders, ios and android, with some files needed to build the native applications.
+
 ```npm install --save react-navigation```
 We use the community library React Navigation to navigate between screens.
 
+```npm install --save fbemitter```
+A simple implementation of Events used mainly to indicate the login and logout events.
 
+```react-native run-android```
+Build the APK and install it in the device. The phone must be connected via USB and have the USB debugging options activated.

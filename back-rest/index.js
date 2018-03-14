@@ -105,6 +105,7 @@ app.get('/logout', function(req, res) {
 });
 
 app.get('/ordergroup', function(req, res) {
+  generateOrders();
   let userId = 1;
   try {
     dbManager.sequelize.transaction(function(t) {
@@ -341,6 +342,27 @@ app.get('/ordergrouplist', function(req, res) {
   }
 });
 
+app.get('/product/:id', function(req, res) {
+  let productId = req.params.id;
+  try {
+    dbManager.product().findOne({
+      where: {
+        id: productId
+      },
+      include: [{
+          model: dbManager.rack(),
+          include: [dbManager.section()]
+      }]
+    }).then(product => {
+      if (!product) res.json({result: false, message: 'Unable to retrieve product with specified ID !'});
+      else res.json({result: true, product: product});
+    });
+  }
+  catch (e) {
+    res.json({result: false, message: e.message});
+  }
+});
+
 app.get('/setup', function(req, res) {
   try {
     db.connect();
@@ -361,11 +383,18 @@ app.get('/test', function(req, res) {
 });
 
 app.get('/generate', function(req, res) {
+  generateOrders();
+  res.json({result: true});
+});
+
+function generateOrders() {
   let nbOrders = 10;
   let maxNbLines = 4;
   let maxQuantity = 10;
   let maxProductId = 6;
+  /*
   let executed = 0;
+  */
   try {
     for (let i = 0; i < nbOrders; i++) {
       dbManager.sequelize.transaction(function(t) {
@@ -399,6 +428,7 @@ app.get('/generate', function(req, res) {
             for (let j = 0; j < nbLines; j++) {
               let quantity = Math.floor(Math.random() * (maxQuantity - 1 + 1)) + 1;
               let productId = Math.floor(Math.random() * (maxProductId - 1 + 1)) + 1;
+              /*
               for (let k = 0; k < products.length; k++) {
                 if (productId == products[k].id) {
                   if (products[k].stock == 0) {
@@ -406,33 +436,34 @@ app.get('/generate', function(req, res) {
                   }
                   else if (quantity > products[k].stock) {
                     quantity = products[k].stock;
-                    /*
+                    //
                     ids.push(products[k].id);
                     stock.push({
                       stock: 0
                     });
                     alert = true;
-                    */
+                    //
                   }
                   else if ((products[k].stock - quantity) <= 10) {
-                    /*
+                    //
                     ids.push(products[k].id);
                     stock.push({
                       stock: products[k].stock - quantity
                     });
                     alert = true;
-                    */
+                    //
                   }
                   else {
-                    /*
+                    //
                     ids.push(products[k].id);
                     stock.push({
                       stock: products[k].stock - quantity
                     });
-                    */
+                    //
                   }
                 }
               }
+              */
               data.push({
                 quantity: quantity,
                 id_order: order.id,
@@ -445,14 +476,17 @@ app.get('/generate', function(req, res) {
           });
         });
       }).then(function(result) {
-        executed++;
         console.log('\nRESULT:\n' + result);
+        /*
+        executed++;
         if (nbOrders == (i + 1)) res.json({
           result: true,
           message: executed + ' order(s) generated !'
         });
+        */
       }).catch(function(err) {
         console.log('\nERR:\n' + err.message);
+        /*
         if (nbOrders == (i + 1)) {
           if (executed > 0) {
             res.json({result: true, message: executed + ' order(s) generated !'});
@@ -461,13 +495,17 @@ app.get('/generate', function(req, res) {
             res.json({result: false, message: 'Any order can be generated'});
           }
         }
+        */
       });
     }
   }
   catch (e) {
+    console.log('\nE:\n' + e.message);
+    /*
     res.json({result: false, message: e.message});
+    */
   }
-});
+}
 
 try {
   dbManager.authenticate();

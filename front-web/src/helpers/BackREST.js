@@ -1,6 +1,6 @@
 class BackREST {
   constructor() {
-    this.baseURL = "http://192.168.1.67:4000/";
+    this.baseURL = "http://localhost:4000/";
   }
 
   /**

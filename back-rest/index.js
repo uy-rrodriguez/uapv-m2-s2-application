@@ -159,7 +159,8 @@ app.get('/ordergroup', function(req, res) {
             for (let i = 0; i < orders.length; i++) {
               let lines_weight = 0;
               for (let j = 0; j < orders[i].order_line.length; j++) {
-                lines_weight += orders[i].order_line[j].product.weight;
+                lines_weight += orders[i].order_line[j].product.weight
+                              * orders[i].order_line[j].quantity;
               }
               if ((total_weight + lines_weight) < user.max_weight) {
                 data.push({

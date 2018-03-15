@@ -66,17 +66,26 @@ class OrderGroupGrid extends Component {
         onPress={this.props.onSectionPress} />
     );
 
-    return (
-      <View style={styles.container}>
-        <Text style={styles.h3}>Poids total: {this.props.orderGroup.total_weight}</Text>
+    if (this.props.orderGroup) {
+      return (
+        <View style={styles.container}>
+          <Text style={styles.h3}>Poids total: {parseFloat(this.props.orderGroup.total_weight).toFixed(2)} kg</Text>
 
-        <View style={styles.gridContainer}>
-          {gridRows}
+          <View style={styles.gridContainer}>
+            {gridRows}
+          </View>
+
+          <Button title="Finaliser" onPress={this.props.onConfirm} style={styles.btnSubmit} styleText={styles.btnSubmitText} />
         </View>
-
-        <Button title="Finaliser" onPress={this.props.onConfirm} style={styles.btnSubmit} styleText={styles.btnSubmitText} />
-      </View>
-    );
+      );
+    }
+    else {
+      return (
+        <View style={styles.container}>
+          <Text style={styles.h3}>Création d'un nouveau regroupement en cours...</Text>
+        </View>
+      );
+    }
   }
 }
 

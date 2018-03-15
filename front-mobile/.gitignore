@@ -3,3 +3,6 @@
 
 # NetBeans Project
 /nbproject
+
+# Log files
+npm-debug.log

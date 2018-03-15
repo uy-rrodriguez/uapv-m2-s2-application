@@ -9,12 +9,16 @@ class LoginFormController extends Component {
     super();
     this.state = {
       user: "picker",
-      password: "picker"
+      password: "picker",
+      backendIP: BackREST.getIP()
     };
 
     this.handleChangeUser = this.handleChangeUser.bind(this);
     this.handleChangePassword = this.handleChangePassword.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    
+    // Simple backend IP configuration
+    this.handleChangeBackendIP = this.handleChangeBackendIP.bind(this);
   }
 
   handleChangeUser(text) {
@@ -49,13 +53,23 @@ class LoginFormController extends Component {
       });
   }
 
+  handleChangeBackendIP(text) {
+    this.setState({backendIP: text});
+    
+    // Update the backend IP when on address change
+    BackREST.setIP(text);
+  }
+
   render() {
     return <LoginForm
       user={this.state.user}
       password={this.state.password}
       onChangeUser={this.handleChangeUser}
       onChangePassword={this.handleChangePassword}
-      onSubmit={this.handleSubmit} />;
+      onSubmit={this.handleSubmit}
+      
+      backendIP={this.state.backendIP}
+      onChangeBackendIP={this.handleChangeBackendIP} />;
   }
 }
 

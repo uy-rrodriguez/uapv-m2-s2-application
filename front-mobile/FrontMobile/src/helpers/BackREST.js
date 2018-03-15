@@ -1,6 +1,26 @@
 module.exports = new class BackREST {
   constructor(props) {
-    this.baseURL = "http://192.168.1.67:4000/";
+    global.backendIP = "192.168.137.1";
+    global.backendPort = "4000";
+  }
+  
+  getBaseURL() {
+    return "http://" + global.backendIP + ":" + global.backendPort + "/";
+  }
+  
+  getIP() {
+    return global.backendIP;
+  }
+
+  /**
+   * Configure the IP of the backend server.
+   *
+   * @param ip
+   */
+  setIP(ip) {
+    if (/^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/.test(ip)) {  
+      global.backendIP = ip;
+    }
   }
 
   /**
@@ -9,7 +29,7 @@ module.exports = new class BackREST {
    * @param url
    */
   get(url) {
-    return fetch(this.baseURL + url)
+    return fetch(this.getBaseURL() + url)
       .then((response) => response.json());
   }
 
@@ -20,7 +40,7 @@ module.exports = new class BackREST {
    * @param data
    */
   post(url, data) {
-    return fetch(this.baseURL + url, {
+    return fetch(this.getBaseURL() + url, {
       method: "POST",
       headers: {
         Accept: "application/json",

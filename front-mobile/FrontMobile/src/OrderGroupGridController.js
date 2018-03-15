@@ -16,8 +16,8 @@ class OrderGroupGridController extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      orderGroup: {},
-      productQuantityMap: {},
+      orderGroup: null,
+      productQuantityMap: null,
       sectionGrid: this.createEmptySectionGrid()
     };
 
@@ -54,7 +54,7 @@ class OrderGroupGridController extends Component {
    *
    */
   generateNewOrderGroup() {
-    BackREST.get("ordergroup/1").
+    BackREST.get("ordergroup").
       then((responseJson) => {
         if (responseJson.result) {
           let orderGroup = responseJson.orderGroup;

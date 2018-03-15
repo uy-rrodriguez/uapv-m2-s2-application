@@ -162,11 +162,29 @@ class OrderGroupGridController extends Component {
   }
 
   sendConfirm(complete) {
-    let completeStr = (complete ? "complete" : "incomplete");
-    Alert.alert(completeStr, completeStr);
+    let data = {
+      status: (complete ? "Complet" : "Incomplet")
+    };
 
     const { goBack } = this.props.navigation;
-    goBack();
+          
+    BackREST.put("ordergroup/" + this.state.orderGroup.id, data)
+      .then((responseJson) => {
+        if (responseJson.result) {
+          Alert.alert(
+            "Groupe de commandes finalisé",
+            "Le regroupement de commandes a bien été finalisé et marqué comme " + data.status
+          );
+          
+          goBack();
+        }
+        else {
+          Alert.alert("Error", "sendConfirm: " + responseJson.message);
+        }
+      })
+      .catch((error) => {
+        Alert.alert("Error", "sendConfirm: " + JSON.stringify(error));
+      });
   }
 
 

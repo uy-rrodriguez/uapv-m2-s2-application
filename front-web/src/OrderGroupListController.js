@@ -30,6 +30,7 @@ class OrderGroupListController extends Component {
             orderGroup.orders.forEach((order) => {
               order.date = order.order.date;
               order.client = order.order.client;
+              order.status = order.order.order_status;
               order.orderlines = order.order.order_line;
             });
           });

@@ -50,4 +50,40 @@ module.exports = new class BackREST {
     })
     .then((response) => response.json());
   }
+
+  /**
+   * Makes a PUT request to the back-end REST API and returns a promise.
+   *
+   * @param url
+   * @param data
+   */
+  put(url, data) {
+    return fetch(this.getBaseURL() + url, {
+      method: "PUT",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    })
+    .then((response) => response.json());
+  }
+
+  /**
+   * Makes a DELETE request to the back-end REST API and returns a promise.
+   *
+   * @param url
+   * @param data
+   */
+  del(url, data) {
+    return fetch(this.getBaseURL() + url, {
+      method: "DELETE",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    })
+    .then((response) => response.json());
+  }
 };

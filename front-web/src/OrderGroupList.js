@@ -20,7 +20,7 @@ class OrderGroupList extends Component {
         return (
           <div key={orderGroup.id + "-" + order.id}>
             <h4>Ordre {order.id}</h4>
-            <span>{order.date} | Client : {order.client}</span>
+            <span>{order.date} | Client : {order.client} | État : {order.status.name}</span>
 
             <table className="table">
               <thead>
